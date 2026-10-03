@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="LernDE — German Learning Platform — Foundation to B2. Self-learning platform with vocabulary, grammar, listening, speaking, translation, memory tools and mock exams." />
+  <title>LernDE — German Learning Platform — Foundation to B2</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <link rel="stylesheet" href="assets/css/app.css" />
+</head>
+<body>
+  <div id="appShell" class="app-shell">
+    <aside id="sidebar" class="sidebar" aria-label="Main navigation">
+      <div class="brand-row">
+        <div class="brand-mark">LD</div>
+        <div><strong>LernDE</strong><small>Foundation → B2</small></div>
+        <button id="closeMenuBtn" class="icon-btn mobile-only" aria-label="Close menu">✕</button>
+      </div>
+      <div class="learner-card">
+        <span class="learner-avatar">AI</span>
+        <div><strong>Ashraful Islam</strong><small>Self Learner</small></div>
+      </div>
+      <nav id="mainNav" class="nav-list">
+        <button class="nav-item active" data-view="home"><span>🏠</span>Dashboard</button>
+        <button class="nav-item" data-view="course"><span>🚀</span>Foundation → B2</button>
+        <button class="nav-item" data-view="vocabulary"><span>🖼️</span>Visual Vocabulary</button>
+        <button class="nav-item" data-view="phrases"><span>💬</span>Phrase Bank</button>
+        <button class="nav-item" data-view="grammar"><span>🧩</span>Grammar Lab</button>
+        <button class="nav-item" data-view="pronunciation"><span>🔊</span>Pronunciation Lab</button>
+        <button class="nav-item" data-view="memory"><span>🧠</span>Memory Coach</button>
+        <button class="nav-item" data-view="games"><span>🎮</span>Learn by Game</button>
+        <button class="nav-item" data-view="skills"><span>🎧</span>4 Skills Practice</button>
+        <button class="nav-item" data-view="translator"><span>🔄</span>Translator & Corrector</button>
+        <button class="nav-item" data-view="professional"><span>💼</span>Professional German</button>
+        <button class="nav-item" data-view="germany"><span>🇩🇪</span>Germany Life</button>
+        <button class="nav-item" data-view="exam"><span>🎯</span>Mock Exam Center</button>
+        <button class="nav-item" data-view="review"><span>🔁</span>Smart Revision</button>
+        <button class="nav-item" data-view="mistakes"><span>❌</span>My Mistakes</button>
+        <button class="nav-item" data-view="progress"><span>📊</span>My Progress</button>
+        <button class="nav-item" data-view="about"><span>🛡️</span>Quality & Standard</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="side-progress-head"><span>Overall progress</span><strong id="sideProgressText">0%</strong></div>
+        <div class="progress-track"><span id="sideProgressBar"></span></div>
+        <small>Saved locally on this device.</small>
+      </div>
+    </aside>
+
+    <div id="sidebarBackdrop" class="sidebar-backdrop" hidden></div>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menuBtn" class="icon-btn mobile-only" aria-label="Open menu">☰</button>
+          <div><span class="eyebrow">LEARN • REMEMBER • USE</span><h1 id="pageTitle">Dashboard</h1></div>
+        </div>
+        <div class="top-actions">
+          <button id="voiceTestBtn" class="ghost-btn">🔊 Test German Voice</button>
+          <button id="installBtn" class="primary-btn" hidden>Install App</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-home">
+        <div class="hero">
+          <div class="hero-copy">
+            <span class="hero-badge">SELF-LEARNER FIRST • FOUNDATION → B2</span>
+            <h2>German যেন কঠিন textbook না লাগে—দেখে, শুনে, বলে, ভুল করে আবার শিখুন।</h2>
+            <p>LernDE একই জায়গায় structured course, visual vocabulary, grammar memory tricks, phrase patterns, listening, speaking, translator, professional German এবং mock exam একত্র করেছে।</p>
+            <div class="hero-actions">
+              <button class="primary-btn" data-jump="course">▶ Continue Learning</button>
+              <button class="ghost-btn" data-jump="review">🔁 Review Weak Words</button>
+            </div>
+            <div class="trust-line"><span>✓ CEFR-aligned scope</span><span>✓ Original practice content</span><span>✓ Bangla helper + German audio</span></div>
+          </div>
+          <aside class="today-card">
+            <span class="section-tag">TODAY'S 30 MINUTES</span>
+            <h3>Easy daily plan</h3>
+            <div class="daily-step"><b>5 min</b><span>🖼️ Visual vocabulary</span></div>
+            <div class="daily-step"><b>7 min</b><span>🧩 Grammar pattern</span></div>
+            <div class="daily-step"><b>5 min</b><span>🎧 Listening</span></div>
+            <div class="daily-step"><b>5 min</b><span>🗣️ Speaking</span></div>
+            <div class="daily-step"><b>8 min</b><span>🔁 Smart review</span></div>
+            <button class="primary-btn block" data-jump="course">Start today's lesson</button>
+          </aside>
+        </div>
+
+        <div class="metric-grid">
+          <article><span>Course</span><strong id="metricLessons">0 / 68</strong><small>lessons completed</small></article>
+          <article><span>Vocabulary</span><strong id="metricWords">0 / 180</strong><small>marked known</small></article>
+          <article><span>Review due</span><strong id="metricDue">0</strong><small>items waiting</small></article>
+          <article><span>Mock score</span><strong id="metricExam">—</strong><small>best completed score</small></article>
+        </div>
+
+        <div class="section-heading compact"><div><span class="section-tag">ONE SITE • FULL LEARNING FLOW</span><h2>Everything works together</h2></div></div>
+        <div class="module-grid">
+          <button class="module-card" data-jump="course"><span>🚀</span><h3>Foundation → B2</h3><p>68 structured learning units</p></button>
+          <button class="module-card" data-jump="vocabulary"><span>🖼️</span><h3>Visual Vocabulary</h3><p>image/icon memory + German audio</p></button>
+          <button class="module-card" data-jump="grammar"><span>🧩</span><h3>Grammar Lab</h3><p>actual rule + Bangla memory trick</p></button>
+          <button class="module-card" data-jump="pronunciation"><span>🔊</span><h3>Pronunciation Lab</h3><p>sound, mouth position, shadowing</p></button>
+          <button class="module-card" data-jump="phrases"><span>💬</span><h3>Phrase Bank</h3><p>reusable sentence chunks</p></button>
+          <button class="module-card" data-jump="translator"><span>🔄</span><h3>Learning Translator</h3><p>translate + explain + correct</p></button>
+          <button class="module-card" data-jump="professional"><span>💼</span><h3>Professional German</h3><p>job, meeting, IT and interview</p></button>
+          <button class="module-card" data-jump="germany"><span>🇩🇪</span><h3>Germany Life</h3><p>real-life language for settling in</p></button>
+          <button class="module-card" data-jump="exam"><span>🎯</span><h3>Mock Exam Center</h3><p>A1, A2, B1, B2 + workplace</p></button>
+          <button class="module-card" data-jump="review"><span>🧠</span><h3>Smart Revision</h3><p>Again / Hard / Good / Easy</p></button>
+        </div>
+      </section>
+
+      <section class="view" id="view-course">
+        <div class="section-heading"><div><span class="section-tag">STRUCTURED ROADMAP</span><h2>Foundation → A1 → A2 → B1 → B2</h2><p>প্রতিটি level-এ ছোট lesson, practical target এবং skill integration।</p></div></div>
+        <div id="levelTabs" class="level-tabs"></div>
+        <div id="levelSummary" class="level-summary card"></div>
+        <div id="lessonGrid" class="lesson-grid"></div>
+      </section>
+
+      <section class="view" id="view-vocabulary">
+        <div class="section-heading"><div><span class="section-tag">VISUAL MEMORY</span><h2>Visual Vocabulary</h2><p>Concrete word = icon + article + meaning + audio. বাংলা উচ্চারণ সহায়ক; German audio মূল reference।</p></div><div class="section-stat"><strong id="vocabCount">180</strong><span>curated entries</span></div></div>
+        <div class="toolbar card">
+          <input id="vocabSearch" type="search" placeholder="German / বাংলা / English search…" />
+          <select id="vocabLevel"><option value="ALL">All levels</option></select>
+          <select id="vocabStatus"><option value="ALL">All status</option><option value="NEW">New</option><option value="KNOWN">Known</option><option value="REVIEW">Review due</option></select>
+          <button id="randomVocabBtn" class="ghost-btn">🎲 Random</button>
+        </div>
+        <div id="vocabGrid" class="vocab-grid"></div>
+      </section>
+
+      <section class="view" id="view-phrases">
+        <div class="section-heading"><div><span class="section-tag">CHUNK LEARNING</span><h2>Phrase Bank</h2><p>একটা pattern শিখে অনেক sentence বানানোর জন্য reusable chunks।</p></div></div>
+        <div class="toolbar card"><select id="phraseLevel"><option value="ALL">All levels</option></select><input id="phraseSearch" type="search" placeholder="Search phrase or meaning…" /></div>
+        <div id="phraseList" class="phrase-list"></div>
+      </section>
+
+      <section class="view" id="view-grammar">
+        <div class="section-heading"><div><span class="section-tag">SIMPLE BUT CORRECT</span><h2>Grammar Lab</h2><p>Mnemonic মনে রাখতে সাহায্য করবে; actual rule-টাই source of truth।</p></div></div>
+        <div class="split-layout">
+          <aside class="card list-panel"><select id="grammarLevel"><option value="ALL">All levels</option></select><div id="grammarList"></div></aside>
+          <article id="grammarDetail" class="card detail-panel"></article>
+        </div>
+      </section>
+
+
+      <section class="view" id="view-pronunciation">
+        <div class="section-heading"><div><span class="section-tag">HEAR • COPY • RECORD • COMPARE</span><h2>Pronunciation Lab</h2><p>বাংলা উচ্চারণ শুধু bridge। Target হলো standard German sound, stress, rhythm এবং natural sentence melody।</p></div><div class="section-stat"><strong id="voiceQuality">Checking…</strong><span>German voice status</span></div></div>
+        <div class="pronunciation-setup card">
+          <div><label for="voiceSelect"><b>German voice</b></label><select id="voiceSelect"></select><small id="voiceNote">Best available de-DE voice automatically selected.</small></div>
+          <div><label for="voiceRate"><b>Practice speed</b></label><select id="voiceRate"><option value="0.65">Very slow</option><option value="0.78">Slow</option><option value="0.9" selected>Natural practice</option><option value="1">Normal</option></select><small>Slow first; then move toward normal speed.</small></div>
+          <button class="primary-btn" id="voiceCalibrationBtn">🔊 Calibrate my German voice</button>
+        </div>
+        <div class="card native-target"><strong>Native-like target, not a fake guarantee:</strong> browser TTS quality depends on the German voice installed on your device. LernDE prioritises de-DE voices and teaches mouth position, listening contrast, rhythm and shadowing so you can copy a consistent German model.</div>
+        <div id="pronunciationGroups" class="pronunciation-grid"></div>
+        <div class="section-heading compact"><div><span class="section-tag">SHADOWING COACH</span><h3>Listen → repeat → record → compare</h3></div></div>
+        <div class="shadow-card card">
+          <div class="field-row"><select id="shadowLevel"></select><button id="newShadowBtn" class="ghost-btn">New prompt</button></div>
+          <h3 id="shadowTitle">Foundation shadowing</h3><p id="shadowText" data-german-text></p><p id="shadowBn" class="muted"></p>
+          <div class="button-row wrap"><button id="shadowSlowBtn" class="ghost-btn">🔊 Slow</button><button id="shadowNaturalBtn" class="primary-btn">🔊 Natural</button><button id="shadowRecordBtn" class="ghost-btn">🎙 Record / Compare</button></div>
+          <div id="shadowResult" class="speech-result">Copy the model. Do not chase speed before the sounds are stable.</div>
+        </div>
+      </section>
+
+      <section class="view" id="view-memory">
+        <div class="section-heading"><div><span class="section-tag">REMEMBER FASTER</span><h2>Memory Coach</h2><p>German মুখস্থ না করে association, chunk, active recall এবং spaced review ব্যবহার করুন।</p></div></div>
+        <div id="memoryRules" class="memory-grid"></div>
+        <div class="card recall-card"><span class="section-tag">3-SECOND RECALL</span><h3 id="recallPrompt">Start a quick recall round</h3><div id="recallAnswer" class="recall-answer" hidden></div><div class="button-row"><button id="recallNewBtn" class="primary-btn">New card</button><button id="recallRevealBtn" class="ghost-btn">Reveal</button></div></div>
+      </section>
+
+
+      <section class="view" id="view-games">
+        <div class="section-heading"><div><span class="section-tag">FAST RECALL • LOW PRESSURE</span><h2>Learn by Game</h2><p>Game-এর উদ্দেশ্য score নয়—দ্রুত recall, article memory এবং listening connection শক্ত করা।</p></div></div>
+        <div class="game-grid">
+          <article class="card game-card"><span>🧠</span><h3>Meaning Sprint</h3><p id="gameMeaningPrompt">Start a round.</p><div id="gameMeaningOptions" class="game-options"></div><button id="gameMeaningNew" class="primary-btn">New round</button></article>
+          <article class="card game-card"><span>🎯</span><h3>Article Challenge</h3><p id="gameArticlePrompt">Pick der / die / das.</p><div class="game-options"><button data-article="der">der</button><button data-article="die">die</button><button data-article="das">das</button></div><div id="gameArticleResult" class="muted"></div><button id="gameArticleNew" class="primary-btn">New noun</button></article>
+          <article class="card game-card"><span>🎧</span><h3>Listen & Reveal</h3><p>শব্দ না দেখে শুনুন, মনে করুন, তারপর answer reveal করুন।</p><button id="gameListenPlay" class="primary-btn">🔊 Play word</button><button id="gameListenReveal" class="ghost-btn">Reveal</button><div id="gameListenAnswer" class="recall-answer" hidden></div><button id="gameListenNew" class="ghost-btn">Next</button></article>
+        </div>
+      </section>
+
+      <section class="view" id="view-skills">
+        <div class="section-heading"><div><span class="section-tag">READ • LISTEN • WRITE • SPEAK</span><h2>4 Skills Practice</h2><p>Self-learner যেন শুধু grammar জানে না—German ব্যবহারও করতে পারে।</p></div></div>
+        <div class="skill-grid">
+          <article class="card skill-card"><span>📖</span><h3>Reading</h3><p id="readingText" data-german-text>Ashraful lernt jeden Tag Deutsch, weil er in Zukunft professionell auf Deutsch kommunizieren möchte.</p><button class="ghost-btn" id="newReadingBtn">New text</button></article>
+          <article class="card skill-card"><span>🎧</span><h3>Listening</h3><p>Text না দেখে German শুনুন, তারপর কী বুঝলেন মনে করুন।</p><button class="primary-btn" id="listenPracticeBtn">▶ Play German</button><button class="ghost-btn" id="showListeningTextBtn">Show transcript</button><div id="listeningTranscript" hidden></div></article>
+          <article class="card skill-card"><span>✍️</span><h3>Writing</h3><p id="writingPrompt">Write 4–6 German sentences introducing yourself professionally.</p><textarea id="writingArea" rows="7" placeholder="Schreiben Sie hier…"></textarea><button id="saveWritingBtn" class="primary-btn">Save draft</button></article>
+          <article class="card skill-card"><span>🗣️</span><h3>Speaking</h3><p id="speakingPrompt" data-german-text>Stellen Sie sich bitte kurz vor.</p><div class="button-row"><button id="speakModelBtn" class="ghost-btn">🔊 Model prompt</button><button id="startSpeechBtn" class="primary-btn">🎙 Start speaking</button></div><div id="speechResult" class="speech-result">Speech recognition support depends on your browser.</div></article>
+        </div>
+      </section>
+
+      <section class="view" id="view-translator">
+        <div class="section-heading"><div><span class="section-tag">LEARNING HELPER</span><h2>Translator & German Corrector</h2><p>Course vocabulary/phrase bank থেকে deterministic help; unsupported free-text-এর জন্য guessing করা হবে না।</p></div></div>
+        <div class="translator-grid">
+          <article class="card">
+            <div class="field-row"><select id="translationMode"><option value="bn-de">Bangla → German</option><option value="en-de">English → German</option><option value="de-bn">German → Bangla</option><option value="de-en">German → English</option></select><button id="swapTranslateBtn" class="icon-btn" title="Swap">⇄</button></div>
+            <textarea id="translateInput" rows="6" placeholder="উদাহরণ: আমার নাম আশরাফুল ইসলাম।"></textarea>
+            <button id="translateBtn" class="primary-btn block">Translate / Explain</button>
+          </article>
+          <article class="card result-card"><span class="section-tag">RESULT</span><div id="translateOutput" class="translate-output">Result এখানে দেখাবে।</div></article>
+        </div>
+        <div class="section-heading compact"><div><span class="section-tag">COMMON ERROR CHECKER</span><h3>Check a German sentence</h3></div></div>
+        <div class="card corrector-box"><textarea id="correctorInput" rows="4" placeholder="Example: weil ich bin müde"></textarea><button id="correctorBtn" class="ghost-btn">Check known patterns</button><div id="correctorResult"></div></div>
+      </section>
+
+      <section class="view" id="view-professional">
+        <div class="section-heading"><div><span class="section-tag">B1–B2 WORKPLACE GERMAN</span><h2>Professional German & IT</h2><p>Interview, meeting, requirement clarification, incident communication এবং software vocabulary।</p></div></div>
+        <div id="professionalList" class="professional-list"></div>
+      </section>
+
+
+      <section class="view" id="view-germany">
+        <div class="section-heading"><div><span class="section-tag">REAL-LIFE LANGUAGE</span><h2>Germany Life German</h2><p>বাসা, Bürgeramt, doctor, bank, transport এবং everyday administration-এর language practice। নিয়ম/আইন বদলাতে পারে—এখানে language শেখানো হয়, legal advice নয়।</p></div></div>
+        <div id="germanyLifeList" class="germany-grid"></div>
+      </section>
+
+      <section class="view" id="view-exam">
+        <div class="section-heading"><div><span class="section-tag">ORIGINAL PRACTICE</span><h2>Mock Exam Center</h2><p>A1–B2 + B2 workplace practice। Official Goethe/telc exam paper নয়।</p></div></div>
+        <div id="examCards" class="exam-grid"></div>
+      </section>
+
+      <section class="view" id="view-review">
+        <div class="section-heading"><div><span class="section-tag">SPACED REVISION</span><h2>Smart Revision</h2><p>যে word ভুলে যাচ্ছেন সেটা আগে ফিরে আসবে।</p></div></div>
+        <div class="metric-grid"><article><span>Due now</span><strong id="reviewDue">0</strong><small>scheduled items</small></article><article><span>Known</span><strong id="reviewKnown">0</strong><small>vocabulary</small></article><article><span>Weak</span><strong id="reviewWeak">0</strong><small>Again/Hard</small></article><article><span>Drafts</span><strong id="reviewDrafts">0</strong><small>writing saved</small></article></div>
+        <div id="reviewCard" class="card review-card"></div>
+      </section>
+
+
+      <section class="view" id="view-mistakes">
+        <div class="section-heading"><div><span class="section-tag">TARGET THE WEAK SPOTS</span><h2>My Mistakes</h2><p>Again/Hard দেওয়া vocabulary এবং repeatedly difficult items এখানে ফিরে আসবে।</p></div></div>
+        <div id="mistakeList" class="phrase-list"></div>
+      </section>
+
+      <section class="view" id="view-progress">
+        <div class="section-heading"><div><span class="section-tag">YOUR DATA</span><h2>My Progress</h2><p>Progress browser localStorage-এ থাকে; export করলে অন্য device-এ import করা যাবে।</p></div></div>
+        <div id="progressSummary" class="progress-summary"></div>
+        <div class="card"><div class="button-row wrap"><button id="exportBtn" class="primary-btn">Export progress JSON</button><label class="ghost-btn file-label">Import progress<input id="importInput" type="file" accept="application/json" hidden /></label><button id="resetBtn" class="danger-btn">Reset local progress</button></div></div>
+      </section>
+
+      <section class="view" id="view-about">
+        <div class="section-heading"><div><span class="section-tag">QUALITY GOVERNANCE</span><h2>How LernDE avoids teaching wrong German</h2><p>সহজ explanation হবে, কিন্তু shortcut কখনো actual grammar rule replace করবে না।</p></div></div>
+        <div class="quality-grid">
+          <article class="card"><span>1</span><h3>Canonical content</h3><p>Vocabulary/phrase/grammar facts একবার define হয়; সব module একই data reuse করে।</p></article>
+          <article class="card"><span>2</span><h3>Pronunciation hierarchy</h3><p>German audio → standard pronunciation → Bangla approximation. Bangla লেখা authoritative pronunciation নয়।</p></article>
+          <article class="card"><span>3</span><h3>CEFR scope</h3><p>Current product scope Foundation, A1, A2, B1, B2. C1/C2 content intentionally excluded.</p></article>
+          <article class="card"><span>4</span><h3>No fake official claims</h3><p>Mock tests are original practice. They are not presented as official Goethe/telc exam papers.</p></article>
+          <article class="card"><span>5</span><h3>AI does not overwrite truth</h3><p>Static verified course content remains canonical. Optional AI integrations should only assist, not silently edit curriculum facts.</p></article>
+          <article class="card"><span>6</span><h3>Versionable data</h3><p>Content is separated into data files so reviews, corrections and future expansion can be audited safely.</p></article>
+        </div>
+        <div class="card notice-card"><strong>Important:</strong> এই ZIP-এর translator intentionally course-aware and deterministic. Full unrestricted free-text translation requires a server-side translation/AI provider; API key কখনো static frontend-এ hard-code করা উচিত নয়।</div>
+      </section>
+    </main>
+  </div>
+
+  <div id="lessonModal" class="modal-backdrop" hidden>
+    <section class="modal card" role="dialog" aria-modal="true" aria-labelledby="lessonModalTitle">
+      <div class="modal-head"><div><span class="section-tag" id="lessonModalLevel">LESSON</span><h2 id="lessonModalTitle">Lesson</h2></div><button class="icon-btn" data-close-modal="lessonModal">✕</button></div>
+      <div id="lessonModalBody"></div>
+    </section>
+  </div>
+
+  <div id="vocabModal" class="modal-backdrop" hidden>
+    <section class="modal card vocab-modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><div><span class="section-tag">VISUAL WORD</span><h2 id="vocabModalTitle">Word</h2></div><button class="icon-btn" data-close-modal="vocabModal">✕</button></div>
+      <div id="vocabModalBody"></div>
+    </section>
+  </div>
+
+  <div id="examModal" class="modal-backdrop" hidden>
+    <section class="modal card exam-modal" role="dialog" aria-modal="true">
+      <div class="modal-head"><div><span class="section-tag" id="examTag">MOCK</span><h2 id="examTitle">Mock Exam</h2></div><div class="modal-head-actions"><strong id="examTimer">00:00</strong><button class="icon-btn" data-close-modal="examModal">✕</button></div></div>
+      <div id="examBody"></div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="assets/js/data-core.js"></script>
+<script src="assets/js/data-lessons.js"></script>
+<script src="assets/js/data-vocabulary.js"></script>
+<script src="assets/js/data-grammar.js"></script>
+<script src="assets/js/data-phrases.js"></script>
+<script src="assets/js/data-pronunciation.js"></script>
+<script src="assets/js/data-professional.js"></script>
+<script src="assets/js/data-exams.js"></script>
+  <script src="assets/js/module-loader.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/german-text.js"></script>
+</body>
+</html>
