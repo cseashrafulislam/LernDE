@@ -1,0 +1,9 @@
+{
+  "version": "2026-10-04",
+  "total": 17000,
+  "chunks": 4,
+  "chunkSize": 4250,
+  "source": "open-dict-data/wikidict-de",
+  "license": "CC0-1.0",
+  "note": "Reference/search bank. Lesson New Words require separate pedagogical validation."
+}
