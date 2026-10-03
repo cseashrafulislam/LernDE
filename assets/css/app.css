@@ -22,3 +22,16 @@
 .pronunciation-setup{display:grid;grid-template-columns:minmax(240px,1fr) minmax(190px,.55fr) auto;gap:14px;align-items:end;padding:18px;margin-bottom:14px}.pronunciation-setup>div{display:flex;flex-direction:column;gap:6px}.pronunciation-setup select{border:1px solid #d7dce5;border-radius:12px;background:#fff;padding:10px 12px;min-height:44px}.pronunciation-setup small{color:var(--muted)}.native-target{padding:16px 18px;background:#eff6ff;border-color:#bfdbfe;margin-bottom:14px}.pronunciation-grid{display:grid;gap:6px}.pron-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pron-card{padding:18px}.pron-card h3{margin:7px 0 4px}.pron-card p{margin:7px 0}.pron-symbol{display:inline-flex;padding:5px 9px;border-radius:999px;background:#111827;color:#fff;font-weight:800;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.pron-examples{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.pron-examples .ghost-btn{min-height:34px;padding:6px 9px;font-size:12px}.shadow-card{padding:20px}.shadow-card h3{font-size:24px;margin:16px 0 4px}.shadow-card #shadowText{font-size:22px;margin:8px 0}.game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.game-card{padding:20px}.game-card>span{font-size:34px}.game-card h3{margin:7px 0}.game-options{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0}.game-options button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px;font-weight:750}.game-options button:hover{background:#f8fafc}.game-options button.game-correct{background:#ecfdf5;border-color:#86efac}.game-options button.game-wrong{background:#fff1f2;border-color:#fda4af}.germany-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.germany-card{padding:20px}.germany-card h3{margin:5px 0 10px}.germany-card>p{margin:7px 0}.germany-icon{font-size:38px;display:block;margin-bottom:8px}
 @media (max-width:1100px){.pron-card-grid{grid-template-columns:repeat(2,1fr)}.pronunciation-setup{grid-template-columns:1fr 1fr}.pronunciation-setup .primary-btn{grid-column:1/-1}.game-grid{grid-template-columns:1fr 1fr}}
 @media (max-width:700px){.pron-card-grid,.game-grid,.germany-grid,.pronunciation-setup{grid-template-columns:1fr}.pronunciation-setup .primary-btn{grid-column:auto}.shadow-card #shadowText{font-size:19px}.pron-examples .ghost-btn{flex:1 1 42%}}
+
+/* 17K dictionary */
+.dictionary-toolbar{display:grid;grid-template-columns:minmax(240px,1fr) 180px auto;gap:10px;align-items:center}
+.dictionary-status{margin:12px 0;padding:14px 16px}
+.dictionary-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.dictionary-row{padding:16px}
+.dictionary-main{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.dictionary-main h3{margin:5px 0 0;font-size:1.08rem}
+.dictionary-row p{margin:8px 0 0}
+@media(max-width:760px){
+  .dictionary-toolbar{grid-template-columns:1fr}
+  .dictionary-results{grid-template-columns:1fr}
+}
