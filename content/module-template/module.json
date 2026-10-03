@@ -1,0 +1,8 @@
+{
+  "id": "C1",
+  "title": "C1",
+  "enabled": true,
+  "version": "1.0.0",
+  "basePath": "content/levels/C1",
+  "files": ["module.json","lessons.json","vocabulary.json","grammar.json","phrases.json","exams.json"]
+}
