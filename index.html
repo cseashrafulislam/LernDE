@@ -27,6 +27,7 @@
         <button class="nav-item active" data-view="home"><span>🏠</span>Dashboard</button>
         <button class="nav-item" data-view="course"><span>🚀</span>Foundation → B2</button>
         <button class="nav-item" data-view="vocabulary"><span>🖼️</span>Visual Vocabulary</button>
+        <button class="nav-item" data-view="dictionary"><span>📖</span>17K Dictionary</button>
         <button class="nav-item" data-view="phrases"><span>💬</span>Phrase Bank</button>
         <button class="nav-item" data-view="grammar"><span>🧩</span>Grammar Lab</button>
         <button class="nav-item" data-view="pronunciation"><span>🔊</span>Pronunciation Lab</button>
@@ -98,6 +99,7 @@
         <div class="module-grid">
           <button class="module-card" data-jump="course"><span>🚀</span><h3>Foundation → B2</h3><p>68 structured learning units</p></button>
           <button class="module-card" data-jump="vocabulary"><span>🖼️</span><h3>Visual Vocabulary</h3><p>image/icon memory + German audio</p></button>
+          <button class="module-card" data-jump="dictionary"><span>📖</span><h3>17K Dictionary</h3><p>17,000 source-backed German ↔ বাংলা/English terms</p></button>
           <button class="module-card" data-jump="grammar"><span>🧩</span><h3>Grammar Lab</h3><p>actual rule + Bangla memory trick</p></button>
           <button class="module-card" data-jump="pronunciation"><span>🔊</span><h3>Pronunciation Lab</h3><p>sound, mouth position, shadowing</p></button>
           <button class="module-card" data-jump="phrases"><span>💬</span><h3>Phrase Bank</h3><p>reusable sentence chunks</p></button>
@@ -125,6 +127,17 @@
           <button id="randomVocabBtn" class="ghost-btn">🎲 Random</button>
         </div>
         <div id="vocabGrid" class="vocab-grid"></div>
+      </section>
+
+      <section class="view" id="view-dictionary">
+        <div class="section-heading"><div><span class="section-tag">17,000 SOURCE-BACKED TERMS</span><h2>German Dictionary</h2><p>German শব্দ search করুন। বাংলা ও English support meaning দেখুন, German pronunciation শুনুন। এই bank reference/search-এর জন্য; lesson-এর “New Words” আলাদা pedagogically validated list।</p></div><div class="section-stat"><strong id="dictTotal">17,000</strong><span>unique entries</span></div></div>
+        <div class="toolbar card dictionary-toolbar">
+          <input id="dictSearch" type="search" autocomplete="off" placeholder="German / বাংলা / English — অন্তত 2 অক্ষর লিখুন…" />
+          <select id="dictLanguage"><option value="ALL">All fields</option><option value="DE">German</option><option value="BN">বাংলা</option><option value="EN">English</option></select>
+          <button id="dictClearBtn" class="ghost-btn">Clear</button>
+        </div>
+        <div id="dictStatus" class="card dictionary-status">Dictionary প্রথমবার খুললে 4টি data chunk lazy-load হবে। Search করতে অন্তত 2 অক্ষর লিখুন।</div>
+        <div id="dictResults" class="dictionary-results"></div>
       </section>
 
       <section class="view" id="view-phrases">
