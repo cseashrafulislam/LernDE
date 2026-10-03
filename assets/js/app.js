@@ -35,6 +35,8 @@
   let currentMeaningWord = null;
   let currentArticleWord = null;
   let currentListenWord = null;
+  let extendedDictionary = null;
+  let dictionaryLoading = null;
 
   function loadState(){
     try{
@@ -90,7 +92,7 @@
     $('#pageTitle').textContent = button ? button.textContent.trim() : 'LernDE';
     state.lastView = target; saveState();
     closeSidebar(); window.scrollTo({top:0,behavior:'smooth'});
-    const renderers = {course:renderCourse,vocabulary:renderVocabulary,phrases:renderPhrases,grammar:renderGrammar,pronunciation:renderPronunciation,memory:renderMemory,games:renderGames,professional:renderProfessional,germany:renderGermanyLife,exam:renderExamCards,review:renderReview,mistakes:renderMistakes,progress:renderProgress};
+    const renderers = {course:renderCourse,vocabulary:renderVocabulary,dictionary:renderDictionary,phrases:renderPhrases,grammar:renderGrammar,pronunciation:renderPronunciation,memory:renderMemory,games:renderGames,professional:renderProfessional,germany:renderGermanyLife,exam:renderExamCards,review:renderReview,mistakes:renderMistakes,progress:renderProgress};
     if(renderers[target]) renderers[target]();
   }
   function openSidebar(){ $('#sidebar').classList.add('open'); $('#sidebarBackdrop').hidden=false; }
@@ -173,6 +175,56 @@
     else interval=interval<=1?7:Math.round(interval*3.2);
     const due=new Date(); due.setDate(due.getDate()+interval);
     setWordState(id,{known:rating!=='again',lastRating:rating,interval,due:due.toISOString(),reps:(s.reps||0)+1,lastReviewed:nowIso()});
+  }
+
+  async function loadExtendedDictionary(){
+    if(extendedDictionary) return extendedDictionary;
+    if(dictionaryLoading) return dictionaryLoading;
+    dictionaryLoading=(async()=>{
+      const urls=['assets/data/dictionary-01.json','assets/data/dictionary-02.json','assets/data/dictionary-03.json','assets/data/dictionary-04.json'];
+      const parts=await Promise.all(urls.map(async url=>{
+        const r=await fetch(url,{cache:'force-cache'});
+        if(!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+        return r.json();
+      }));
+      extendedDictionary=parts.flat();
+      if(extendedDictionary.length!==17000) console.warn('[LernDE dictionary] expected 17000, got',extendedDictionary.length);
+      return extendedDictionary;
+    })().finally(()=>{dictionaryLoading=null;});
+    return dictionaryLoading;
+  }
+
+  async function renderDictionary(){
+    const status=$('#dictStatus'), results=$('#dictResults');
+    if(!status||!results) return;
+    if(!extendedDictionary){
+      status.textContent='17K dictionary loading…';
+      results.innerHTML='<div class="card empty-state">Loading source-backed dictionary…</div>';
+      try{await loadExtendedDictionary();}catch(e){
+        status.textContent='Dictionary load failed.';
+        results.innerHTML=`<div class="card mistake-box"><b>Load failed</b><p>${esc(e.message)}</p></div>`;
+        return;
+      }
+    }
+    const q=$('#dictSearch')?.value.trim()||'';
+    const lang=$('#dictLanguage')?.value||'ALL';
+    $('#dictTotal').textContent=extendedDictionary.length.toLocaleString();
+    if(q.length<2){
+      status.textContent='Search করতে অন্তত 2 অক্ষর লিখুন। 17,000 entry একসাথে render করা হয় না—mobile performance রক্ষার জন্য।';
+      results.innerHTML='';
+      return;
+    }
+    const needle=q.toLocaleLowerCase();
+    const fields=x=>lang==='DE'?[x.de]:lang==='BN'?[x.bn]:lang==='EN'?[x.en]:[x.de,x.bn,x.en];
+    const list=extendedDictionary.filter(x=>fields(x).some(v=>String(v||'').toLocaleLowerCase().includes(needle))).slice(0,120);
+    const total=extendedDictionary.reduce((n,x)=>n+(fields(x).some(v=>String(v||'').toLocaleLowerCase().includes(needle))?1:0),0);
+    status.textContent=`${total.toLocaleString()} result${total===1?'':'s'} found${total>120?' • showing first 120':''}.`;
+    results.innerHTML=list.length?list.map(x=>`<article class="card dictionary-row">
+      <div class="dictionary-main"><div><span class="vocab-level">${x.referenceOnly?'REFERENCE':'TERM'}</span><h3 data-german-text>${esc(x.de)}</h3></div><button class="icon-btn dict-say" data-say="${esc(x.de)}">🔊</button></div>
+      <p><b>বাংলা:</b> ${esc(x.bn)}</p><p class="muted"><b>English:</b> ${esc(x.en||'—')}</p>
+    </article>`).join(''):'<div class="card empty-state">কোনো matching entry পাওয়া যায়নি।</div>';
+    $('#dictResults .dict-say').forEach(b=>b.onclick=()=>speak(b.dataset.say,.88));
+    window.LernDEGerman?.decorate?.(results);
   }
 
   function renderVocabulary(){
@@ -393,7 +445,7 @@
     $$('[data-close-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeModal));
     $$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
     $('#voiceTestBtn').onclick=()=>speak('Guten Tag. Ich heiße Ashraful Islam. Willkommen bei LernDE.');
-    $('#vocabSearch').oninput=renderVocabulary; $('#vocabLevel').onchange=renderVocabulary; $('#vocabStatus').onchange=renderVocabulary; $('#randomVocabBtn').onclick=()=>{$('#vocabSearch').value='';$('#vocabLevel').value='ALL';renderVocabulary();const cards=$$('#vocabGrid .vocab-card');if(cards.length)cards[Math.floor(Math.random()*cards.length)].scrollIntoView({behavior:'smooth',block:'center'});};
+    $('#vocabSearch').oninput=renderVocabulary; $('#dictSearch').oninput=renderDictionary; $('#dictLanguage').onchange=renderDictionary; $('#dictClearBtn').onclick=()=>{$('#dictSearch').value='';renderDictionary();}; $('#vocabLevel').onchange=renderVocabulary; $('#vocabStatus').onchange=renderVocabulary; $('#randomVocabBtn').onclick=()=>{$('#vocabSearch').value='';$('#vocabLevel').value='ALL';renderVocabulary();const cards=$$('#vocabGrid .vocab-card');if(cards.length)cards[Math.floor(Math.random()*cards.length)].scrollIntoView({behavior:'smooth',block:'center'});};
     $('#phraseLevel').onchange=renderPhrases; $('#phraseSearch').oninput=renderPhrases; $('#grammarLevel').onchange=renderGrammar;
     $('#voiceSelect').onchange=e=>{state.voiceURI=e.target.value;saveState();renderPronunciation();speak('Guten Tag. Willkommen bei LernDE.',.9);}; $('#voiceRate').onchange=e=>{state.voiceRate=Number(e.target.value);saveState();}; $('#voiceCalibrationBtn').onclick=()=>speak('Guten Tag. Ich lerne Deutsch. Heute übe ich Aussprache, Rhythmus und Satzmelodie.',state.voiceRate);
     $('#shadowLevel').onchange=chooseShadow; $('#newShadowBtn').onclick=chooseShadow; $('#shadowSlowBtn').onclick=()=>currentShadow&&speak(currentShadow.text,.68); $('#shadowNaturalBtn').onclick=()=>currentShadow&&speak(currentShadow.text,Math.max(.88,state.voiceRate||.9)); $('#shadowRecordBtn').onclick=()=>currentShadow&&startRecognition(currentShadow.text,'#shadowResult');
