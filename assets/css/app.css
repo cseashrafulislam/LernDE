@@ -35,3 +35,23 @@
   .dictionary-toolbar{grid-template-columns:1fr}
   .dictionary-results{grid-template-columns:1fr}
 }
+
+/* Foundation lesson system */
+.lesson-loading{padding:40px;text-align:center;color:var(--muted,#667085)}
+.lesson-focus{padding:18px;border-radius:16px;background:var(--soft,#f6f7fb);margin-bottom:16px}
+.lesson-focus h3,.lesson-focus h4{margin:10px 0 6px}.lesson-focus p{margin:0 0 10px}
+.alphabet-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.alphabet-card{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 8px;border:1px solid var(--border,#e5e7eb);border-radius:14px;background:#fff;text-align:center}
+.alphabet-letter{border:0;background:transparent;font-size:1.8rem;font-weight:800;cursor:pointer}
+.alphabet-card small{color:var(--muted,#667085)}
+.alphabet-example{border:0;background:transparent;font-weight:700;cursor:pointer;text-decoration:underline;text-decoration-style:dotted}
+.alphabet-card span{font-size:.78rem;color:var(--muted,#667085)}
+.lesson-block-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.lesson-rule-list{display:grid;gap:10px}.lesson-rule-list>div{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start}.lesson-rule-list b{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#111827;color:#fff}.lesson-rule-list p{margin:4px 0}
+.example-stack{display:grid;gap:8px}.example-stack>div{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border,#e5e7eb);border-radius:12px}
+.lesson-word-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:560px;overflow:auto;padding-right:3px}
+.lesson-word{display:grid;grid-template-columns:30px 1fr auto;gap:9px;align-items:start;padding:10px;border:1px solid var(--border,#e5e7eb);border-radius:12px;background:#fff}
+.lesson-word p,.lesson-word small{margin:3px 0;display:block}.lesson-word small{color:var(--muted,#667085)}.word-no{font-size:.75rem;color:var(--muted,#667085);padding-top:3px}
+.dialogue-box{padding:14px;border-left:4px solid #111827;background:var(--soft,#f6f7fb);border-radius:8px;margin-bottom:10px}.dialogue-box p{margin:6px 0}
+.task-list{padding-left:22px}.task-list li{margin:8px 0}
+@media(max-width:760px){.alphabet-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.lesson-word-grid{grid-template-columns:1fr;max-height:none}.lesson-block-head{flex-direction:column}}
