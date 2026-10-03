@@ -36,6 +36,7 @@
   let currentArticleWord = null;
   let currentListenWord = null;
   let extendedDictionary = null;
+  const lessonVocabularyCache = {};
   let dictionaryLoading = null;
 
   function loadState(){
@@ -115,6 +116,14 @@
     $('#sideProgressBar').style.width=`${pct}%`;
   }
 
+  async function loadLessonVocabulary(level){
+    if(lessonVocabularyCache[level]) return lessonVocabularyCache[level];
+    const paths={FOUNDATION:'assets/data/lesson-vocabulary-foundation.json'};
+    const path=paths[level]; if(!path) return null;
+    const res=await fetch(path,{cache:'force-cache'}); if(!res.ok) throw new Error('Vocabulary pack '+level+': HTTP '+res.status);
+    const data=await res.json(); lessonVocabularyCache[level]=data; return data;
+  }
+
   function renderCourse(){
     const selected = state.selectedLevel || 'FOUNDATION';
     $('#levelTabs').innerHTML = D.levels.map(l=>`<button class="level-tab ${l.id===selected?'active':''}" data-level="${l.id}">${esc(l.title)}</button>`).join('');
@@ -130,33 +139,59 @@
     $$('#lessonGrid [data-lesson-id]').forEach(b=>b.onclick=()=>openLesson(b.dataset.lessonId));
   }
 
-  function openLesson(id){
+  async function openLesson(id){
     const l=D.lessons.find(x=>x.id===id); if(!l) return;
-    const levelV=D.vocabulary.filter(x=>x.level===l.level), levelP=D.phrases.filter(x=>x.level===l.level), levelG=D.grammar.filter(x=>x.level===l.level);
-    const take=(arr,count,seed)=>Array.from({length:Math.min(count,arr.length)},(_,i)=>arr[(seed+i)%arr.length]);
-    const sameV=take(levelV,4,(l.order-1)*4), sameP=take(levelP,3,(l.order-1)*3), sameG=take(levelG,2,(l.order-1)*2);
-    const pronunciation=l.level==='FOUNDATION'&&D.pronunciationDrills?.length ? D.pronunciationDrills[(l.order-1)%D.pronunciationDrills.length] : null;
     $('#lessonModalLevel').textContent=l.id;
     $('#lessonModalTitle').textContent=l.title;
-    const phraseHtml=sameP.length?sameP.map(p=>`<div class="lesson-content-block"><div class="phrase-top"><div><b>${deHtml(p.de)}</b><div class="pron-line">${esc(p.bnPron)}</div></div><button class="icon-btn speak-btn" data-say="${esc(p.de)}">🔊</button></div><div>${esc(p.bn)}</div></div>`).join(''):'<p class="muted">এই level-এর phrase bank থেকে practice করুন।</p>';
-    const grammarHtml=sameG.length?sameG.map(g=>`<div class="memory-box"><b>🧠 ${esc(g.title)}</b><p>${esc(g.memory)}</p><small>${esc(g.rule)}</small></div>`).join(''):'<div class="memory-box">Foundation sound pattern practice করুন।</div>';
-    $('#lessonModalBody').innerHTML=`
-      <p class="muted">${esc(l.description)}</p>
-      <div class="lesson-flow">${l.steps.map((s,i)=>`<div class="lesson-step"><b>${i+1}</b><br>${esc(s)}</div>`).join('')}</div>
-      <div class="lesson-content-block"><h3>🎯 আজকের goal</h3><p>${esc(D.levels.find(x=>x.id===l.level)?.goal||'Practice German step by step.')}</p></div>
-      <div class="lesson-content-block"><h3>🖼️ Visual words</h3><div class="vocab-grid">${sameV.map(w=>miniVocab(w)).join('')}</div></div>
-      ${pronunciation?`<div class="lesson-content-block"><h3>🔊 Foundation pronunciation focus</h3><p><b>${esc(pronunciation.title)}</b> <span class="chip">${esc(pronunciation.symbol)}</span></p><p>${esc(pronunciation.mouth)}</p><div class="meta-chips">${pronunciation.examples.map(x=>`<button class="ghost-btn speak-btn" data-say="${esc(x)}">🔊 ${esc(x)}</button>`).join('')}</div><div class="mistake-box"><b>Avoid</b><p>${esc(pronunciation.trap)}</p></div></div>`:''}
-      <div class="lesson-content-block"><h3>🧠 Memory Tip + Rule</h3>${grammarHtml}</div>
-      <div class="lesson-content-block"><h3>💬 Useful patterns</h3>${phraseHtml}</div>
-      <div class="lesson-content-block"><h3>🗣️ Self-learner routine</h3><ol><li>German audio শুনুন।</li><li>Text দেখে 2বার বলুন।</li><li>Text hide করে মনে করার চেষ্টা করুন।</li><li>নিজের example বানান।</li></ol></div>
-      <button class="primary-btn block" id="completeLessonBtn">${state.completedLessons.includes(id)?'✓ Completed — tap to mark incomplete':'Complete lesson ✓'}</button>`;
+    $('#lessonModalBody').innerHTML='<div class="lesson-loading">Loading lesson…</div>';
     $('#lessonModal').hidden=false;
+
+    let pack=null;
+    try{pack=await loadLessonVocabulary(l.level);}catch(e){console.error(e);toast('Lesson vocabulary load failed.');}
+    const lessonWords=pack?.lessons?.[id]||[];
+    const detail=D.foundationContent?.[id]||null;
+
+    if(detail){
+      const alpha=id==='FOUNDATION-01'
+        ? '<div class="lesson-content-block"><h3>🔤 German Alphabet — A–Z + Ä Ö Ü ß</h3><p class="muted">Letter card tap করলে letter name শুনবেন; example tap করলে German word শুনবেন।</p><div class="alphabet-grid">'
+          +(D.foundationAlphabet||[]).map(a=>'<div class="alphabet-card"><button class="alphabet-letter speak-btn" data-say="'+esc(a.name)+'">'+esc(a.letter)+'</button><b>'+esc(a.name)+'</b><small>'+esc(a.ipa)+'</small><button class="alphabet-example speak-btn" data-say="'+esc(a.example)+'">'+esc(a.example)+'</button><span>'+esc(a.bn)+'</span></div>').join('')
+          +'</div></div>'
+        : '';
+      const wordsHtml=lessonWords.length
+        ? '<div class="lesson-content-block"><div class="lesson-block-head"><div><h3>📚 50 New Words — unique introduction</h3><p class="muted">এই lemma অন্য Foundation lesson-এ New Word হিসেবে repeat হয় না। Example/revision-এ পুরনো word পুনরায় আসতে পারে।</p></div><span class="section-tag">'+lessonWords.length+' NEW</span></div><div class="lesson-word-grid">'
+          +lessonWords.map((w,i)=>'<article class="lesson-word"><span class="word-no">'+(i+1)+'</span><div><b data-german-text>'+esc(w.de)+'</b><p>'+esc(w.bn)+'</p><small>'+esc(String(w.en||'').length>110?String(w.en).slice(0,107)+'…':w.en||'')+'</small></div><button class="icon-btn speak-btn" data-say="'+esc(w.de)+'">🔊</button></article>').join('')
+          +'</div></div>'
+        : '<div class="mistake-box">New-word pack unavailable.</div>';
+      $('#lessonModalBody').innerHTML=
+        '<div class="lesson-focus"><span class="section-tag">FOUNDATION • '+l.minutes+' MIN CORE + PRACTICE</span><h3>🎯 Goal</h3><p>'+esc(detail.goal)+'</p><h4>Why this matters</h4><p>'+esc(detail.why)+'</p></div>'
+        +alpha
+        +'<div class="lesson-content-block"><h3>🧠 Rule / Technique</h3><div class="lesson-rule-list">'+detail.rules.map((x,i)=>'<div><b>'+(i+1)+'</b><p>'+esc(x)+'</p></div>').join('')+'</div></div>'
+        +'<div class="lesson-content-block"><h3>🔊 Hear & Repeat</h3><div class="example-stack">'+detail.examples.map(x=>'<div><span data-german-text>'+esc(x)+'</span><button class="icon-btn speak-btn" data-say="'+esc(x)+'">🔊</button></div>').join('')+'</div></div>'
+        +wordsHtml
+        +'<div class="lesson-content-block"><h3>💬 Mini Dialogue / Drill</h3><div class="dialogue-box">'+detail.dialogue.map(x=>'<p data-german-text>'+esc(x)+'</p>').join('')+'</div><button class="ghost-btn speak-btn" data-say="'+esc(detail.dialogue.join(' '))+'">🔊 Hear full dialogue</button></div>'
+        +'<div class="lesson-content-block"><h3>✅ Do it yourself</h3><ol class="task-list">'+detail.tasks.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></div>'
+        +'<div class="memory-box"><b>Study rule</b><p>সব 50 word এক session-এ মুখস্থ করবেন না। প্রথম pass-এ sound/meaning চিনুন; পরে Smart Review + Games active recall করবে।</p></div>'
+        +'<button class="primary-btn block" id="completeLessonBtn">'+(state.completedLessons.includes(id)?'✓ Completed — tap to mark incomplete':'Complete lesson ✓')+'</button>';
+    } else {
+      const levelV=D.vocabulary.filter(x=>x.level===l.level), levelP=D.phrases.filter(x=>x.level===l.level), levelG=D.grammar.filter(x=>x.level===l.level);
+      const take=(arr,count,seed)=>Array.from({length:Math.min(count,arr.length)},(_,i)=>arr[(seed+i)%arr.length]);
+      const sameV=take(levelV,8,(l.order-1)*8), sameP=take(levelP,4,(l.order-1)*4), sameG=take(levelG,2,(l.order-1)*2);
+      $('#lessonModalBody').innerHTML=
+        '<p class="muted">'+esc(l.description)+'</p>'
+        +'<div class="lesson-content-block"><h3>🎯 Goal</h3><p>'+esc(D.levels.find(x=>x.id===l.level)?.goal||'Practice German step by step.')+'</p></div>'
+        +'<div class="lesson-content-block"><h3>📚 Current curated lesson set</h3><div class="vocab-grid">'+sameV.map(w=>miniVocab(w)).join('')+'</div></div>'
+        +'<div class="lesson-content-block"><h3>🧩 Grammar</h3>'+sameG.map(g=>'<div class="memory-box"><b>'+esc(g.title)+'</b><p>'+esc(g.rule)+'</p><small>'+esc(g.memory)+'</small></div>').join('')+'</div>'
+        +'<div class="lesson-content-block"><h3>💬 Useful patterns</h3>'+sameP.map(p=>'<div class="lesson-content-block"><b data-german-text>'+esc(p.de)+'</b><p>'+esc(p.bn)+'</p><button class="ghost-btn speak-btn" data-say="'+esc(p.de)+'">🔊</button></div>').join('')+'</div>'
+        +'<div class="notice-card">A1–B2 lesson-specific large word packs are loaded only after content validation. Extended 17K dictionary is available separately and is not silently counted as lesson mastery.</div>'
+        +'<button class="primary-btn block" id="completeLessonBtn">'+(state.completedLessons.includes(id)?'✓ Completed — tap to mark incomplete':'Complete lesson ✓')+'</button>';
+    }
     $$('#lessonModal .speak-btn').forEach(b=>b.onclick=()=>speak(b.dataset.say));
+    window.LernDEGerman?.decorate?.($('#lessonModalBody'));
     $('#completeLessonBtn').onclick=()=>{
       const done=state.completedLessons.includes(id);
-      state.completedLessons = done ? state.completedLessons.filter(x=>x!==id) : [...state.completedLessons,id];
-      if(!done) logActivity('lesson',`Completed ${id} ${l.title}`);
-      saveState(); renderCourse(); closeModal('lessonModal'); toast(done?'Marked incomplete':'Lesson completed! 🎉');
+      state.completedLessons=done?state.completdLessons.filter(x=>x!==id):[...state.completedLessons,id];
+      if(!done)logActivity('lesson','Completed '+id+' '+l.title);
+      saveState();renderCourse();closeModal('lessonModal');toast(done?'Marked incomplete':'Lesson completed! 🎉');
     };
   }
   function miniVocab(w){
