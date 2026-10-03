@@ -393,8 +393,27 @@ DATA={
  "levels":levels,"lessons":lessons,"grammar":grammar,"vocabulary":vocab,"phrases":phrases,"memoryRules":memory_rules,
  "professionalTopics":professional_topics,"germanyLifeTopics":germany_life_topics,"pronunciationDrills":pronunciation_drills,"shadowingSets":shadowing_sets,"examProfiles":exam_profiles,"corrector":corrector,"mockExams":mock_exams,"translatorPhrases":translator_phrases
 }
-path=ROOT/"assets/js/data.js"
-path.write_text("window.LERNDE_DATA = "+json.dumps(DATA,ensure_ascii=False,separators=(",",":"))+";\n",encoding="utf-8")
+# Write versionable browser data packs instead of one monolithic bundle.
+parts={
+ "data-core.js": {k:DATA[k] for k in ["meta","levels","memoryRules"]},
+ "data-lessons.js": {"lessons":DATA["lessons"]},
+ "data-vocabulary.js": {"vocabulary":DATA["vocabulary"]},
+ "data-grammar.js": {"grammar":DATA["grammar"]},
+ "data-phrases.js": {"phrases":DATA["phrases"]},
+ "data-pronunciation.js": {k:DATA[k] for k in ["pronunciationDrills","shadowingSets"]},
+ "data-professional.js": {k:DATA[k] for k in ["professionalTopics","germanyLifeTopics","corrector"]},
+ "data-exams.js": {k:DATA[k] for k in ["examProfiles","mockExams","translatorPhrases"]},
+}
+for filename,payload in parts.items():
+    prefix="window.LERNDE_DATA = " if filename=="data-core.js" else "Object.assign(window.LERNDE_DATA, "
+    suffix=";\n" if filename=="data-core.js" else ");\n"
+    (ROOT/"assets/js"/filename).write_text(prefix+json.dumps(payload,ensure_ascii=False,separators=(",",":"))+suffix,encoding="utf-8")
+
+# Prevent stale monolithic output from becoming a second source of truth.
+legacy=ROOT/"assets/js/data.js"
+if legacy.exists():
+    legacy.unlink()
+
 manifest={
  "levels":len(levels),"lessons":len(lessons),"grammarTopics":len(grammar),"vocabularyEntries":len(vocab),"phraseEntries":len(phrases),"mockExams":len(mock_exams),"professionalTopics":len(professional_topics),"pronunciationDrills":len(pronunciation_drills),"germanyLifeTopics":len(germany_life_topics),"generated":"2026-10-04"
 }
