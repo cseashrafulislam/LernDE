@@ -46,24 +46,31 @@
   let gameSpeedHandle = null;
   let gameSpeedRemaining = 20;
   let extendedDictionary = null;
+  let extendedDictionaryIndex = null;
   const lessonVocabularyCache = {};
   let dictionaryLoading = null;
   let dictionaryPage = 1;
+  let dictSearchTimer = null;
   let currentGamePool = [];
   let currentCaseQuestion = null;
   let memoryGameState = null;
 
+  function normalizeState(input){
+    const defaults=defaultState(),src=input&&typeof input==='object'&&!Array.isArray(input)?input:{};
+    const arr=v=>Array.isArray(v)?v:[],obj=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
+    const allowedViews=new Set(['home','roadmap','course','vocabulary','dictionary','phrases','grammar','pronunciation','memory','games','skills','translator','professional','germany','exam','review','mistakes','progress','about']);
+    const allowedStatus=new Set(['UNREAD','READ','ALL']),allowedLang=new Set(['ALL','DE','BN','EN']),allowedClass=new Set(['ALL','TERM','REFERENCE','CODE']),allowedCat=new Set(['ALL','GENERAL','WORK_TECH','HEALTH','SCIENCE','PLACE_NAME']),allowedSort=new Set(['LEARNING','AZ','ZA']);
+    const p={...defaults.dictionaryPrefs,...obj(src.dictionaryPrefs)};
+    p.status=allowedStatus.has(p.status)?p.status:'UNREAD';p.language=allowedLang.has(p.language)?p.language:'ALL';p.entryClass=allowedClass.has(p.entryClass)?p.entryClass:'ALL';p.category=allowedCat.has(p.category)?p.category:'ALL';p.sort=allowedSort.has(p.sort)?p.sort:'LEARNING';p.pageSize=[15,20].includes(Number(p.pageSize))?Number(p.pageSize):15;
+    const completed=[...new Set(arr(src.completedLessons).filter(id=>D.lessons.some(x=>x.id===id)))];
+    const selected=D.levels.some(x=>x.id===src.selectedLevel)?src.selectedLevel:'FOUNDATION';
+    return {...defaults,version:4,completedLessons:completed,vocab:obj(src.vocab),examScores:obj(src.examScores),writingDrafts:arr(src.writingDrafts).filter(x=>x&&typeof x.text==='string').slice(0,20),activities:arr(src.activities).filter(x=>x&&typeof x.text==='string').slice(0,50),lastView:allowedViews.has(src.lastView)?src.lastView:'home',selectedLevel:selected,voiceURI:typeof src.voiceURI==='string'?src.voiceURI:'',voiceRate:clamp(Number(src.voiceRate)||.9,.55,1.15),game:{...defaults.game,...obj(src.game)},gameMistakes:obj(src.gameMistakes),dictionaryRead:obj(src.dictionaryRead),dictionaryPrefs:p};
+  }
   function loadState(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return defaultState();
-      const parsed = JSON.parse(raw);
-      const defaults=defaultState();
-      return {...defaults, ...parsed, vocab: parsed.vocab || {}, examScores: parsed.examScores || {}, dictionaryRead: parsed.dictionaryRead || {}, dictionaryPrefs: {...defaults.dictionaryPrefs, ...(parsed.dictionaryPrefs||{})}};
-    } catch { return defaultState(); }
+    try{const raw=localStorage.getItem(STORAGE_KEY);return raw?normalizeState(JSON.parse(raw)):defaultState();}catch{return defaultState();}
   }
   function saveState(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){console.warn('[LernDE progress]',e);}
     renderMetrics();
   }
   function logActivity(type,text){
@@ -76,7 +83,7 @@
   }
   function germanVoices(){
     if(!('speechSynthesis' in window)) return [];
-    return speechSynthesis.getVoices().filter(v=>/^de(?:-|_)/i.test(v.lang)||/German|Deutsch/i.test(v.name));
+    return window.speechSynthesis.getVoices().filter(v=>/^de(?:-|_)/i.test(v.lang)||/German|Deutsch/i.test(v.name));
   }
   function voiceScore(v){
     let score=0;
@@ -92,11 +99,11 @@
   }
   function speak(text, rate=null){
     if(!('speechSynthesis' in window)){ toast('এই browser-এ German speech synthesis পাওয়া যায়নি।'); return; }
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.cancel();
+    const u = new window.SpeechSynthesisUtterance(text);
     u.lang = 'de-DE'; u.rate = clamp(Number(rate ?? state.voiceRate ?? .9),.55,1.15); u.pitch = 1;
     const de=selectedGermanVoice(); if(de) u.voice=de;
-    speechSynthesis.speak(u);
+    window.speechSynthesis.speak(u);
   }
   window.LernDESpeak=(text,rate)=>speak(text,rate);
 
@@ -133,16 +140,13 @@
 
   async function loadLessonVocabulary(level){
     if(lessonVocabularyCache[level]) return lessonVocabularyCache[level];
-    const paths={
-      FOUNDATION:'assets/data/lesson-vocabulary-foundation.json',
-      A1:'assets/data/lesson-vocabulary-a1.json',
-      A2:'assets/data/lesson-vocabulary-a2.json',
-      B1:'assets/data/lesson-vocabulary-b1.json',
-      B2:'assets/data/lesson-vocabulary-b2.json'
-    };
-    const path=paths[level]; if(!path) return null;
+    const module=(window.LERNDE_MODULES?.modules||[]).find(x=>x.id===level);
+    const path=module?.lessonVocabularyPath || (module?.bundled!==false?`assets/data/lesson-vocabulary-${String(level).toLowerCase()}.json`:null);
+    if(!path) return null;
     const res=await fetch(path,{cache:'force-cache'}); if(!res.ok) throw new Error('Vocabulary pack '+level+': HTTP '+res.status);
-    const data=await res.json(); lessonVocabularyCache[level]=data; return data;
+    const data=await res.json(); lessonVocabularyCache[level]=data;
+    window.LernDEGerman?.addEntries?.(Object.values(data.lessons||{}).flat(),'lesson',3);
+    return data;
   }
 
   function renderCourse(){
@@ -179,7 +183,7 @@
           +'</div></div>'
         : '';
       const wordsHtml=lessonWords.length
-        ? '<div class="lesson-content-block"><div class="lesson-block-head"><div><h3>📚 50 New Words — unique introduction</h3><p class="muted">এই lemma অন্য Foundation lesson-এ New Word হিসেবে repeat হয় না। Example/revision-এ পুরনো word পুনরায় আসতে পারে।</p></div><span class="section-tag">'+lessonWords.length+' NEW</span></div><div class="lesson-word-grid">'
+        ? '<div class="lesson-content-block"><div class="lesson-block-head"><div><h3>📚 50 Source-backed reference words</h3><p class="muted">এগুলো broad reference vocabulary। Core lesson mastery-এর বিকল্প নয়; প্রতিটি entry source-backed এবং duplicate-free রাখা হয়েছে।</p></div><span class="section-tag">'+lessonWords.length+' NEW</span></div><div class="lesson-word-grid">'
           +lessonWords.map((w,i)=>'<article class="lesson-word"><span class="word-no">'+(i+1)+'</span><div><b data-german-text>'+esc(w.de)+'</b><p>'+esc(w.bn)+'</p><small>'+esc(String(w.en||'').length>110?String(w.en).slice(0,107)+'…':w.en||'')+'</small></div><button class="icon-btn speak-btn" data-say="'+esc(w.de)+'">🔊</button></article>').join('')
           +'</div></div>'
         : '<div class="mistake-box">New-word pack unavailable.</div>';
@@ -198,7 +202,7 @@
       const take=(arr,count,seed)=>Array.from({length:Math.min(count,arr.length)},(_,i)=>arr[(seed+i)%arr.length]);
       const sameV=take(levelV,8,(l.order-1)*8), sameP=take(levelP,4,(l.order-1)*4), sameG=take(levelG,2,(l.order-1)*2);
       const expansionHtml=lessonWords.length
-        ? '<div class="lesson-content-block"><div class="lesson-block-head"><div><h3>📚 50 New Words — Unique Vocabulary Expansion</h3><p class="muted">এই 50 lemma অন্য lesson-এ New Word হিসেবে repeat হয় না। Core lesson topic/grammar নিচের curated content; এই block vocabulary breadth বাড়ায়।</p></div><span class="section-tag">'+lessonWords.length+' NEW</span></div><div class="lesson-word-grid">'
+        ? '<div class="lesson-content-block"><div class="lesson-block-head"><div><h3>📚 50 Source-backed reference words</h3><p class="muted">এই optional block vocabulary breadth বাড়ায়। Core lesson, grammar ও practical phrase-ই primary learning target; reference list CEFR-certified word list নয়।</p></div><span class="section-tag">'+lessonWords.length+' NEW</span></div><div class="lesson-word-grid">'
           +lessonWords.map((w,i)=>'<article class="lesson-word"><span class="word-no">'+(i+1)+'</span><div><b data-german-text>'+esc(w.de)+'</b><p>'+esc(w.bn)+'</p><small>'+esc(String(w.en||'').length>100?String(w.en).slice(0,97)+'…':w.en||'')+'</small></div><button class="icon-btn speak-btn" data-say="'+esc(w.de)+'">🔊</button></article>').join('')
           +'</div></div>'
         : '<div class="mistake-box">Lesson vocabulary pack unavailable.</div>';
@@ -209,7 +213,7 @@
         +expansionHtml
         +'<div class="lesson-content-block"><h3>🧩 Grammar</h3>'+sameG.map(g=>'<div class="memory-box"><b>'+esc(g.title)+'</b><p>'+esc(g.rule)+'</p><small>'+esc(g.memory)+'</small></div>').join('')+'</div>'
         +'<div class="lesson-content-block"><h3>💬 Useful patterns</h3>'+sameP.map(p=>'<div class="lesson-content-block"><b data-german-text>'+esc(p.de)+'</b><p>'+esc(p.bn)+'</p><button class="ghost-btn speak-btn" data-say="'+esc(p.de)+'">🔊</button></div>').join('')+'</div>'
-        +'<div class="memory-box"><b>Vocabulary standard</b><p>Core CEFR lesson content এবং 50-word expansion আলাদা রাখা হয়েছে। Expansion bank real/source-backed reference vocabulary; exam mastery শুধু word count দিয়ে নির্ধারিত হয় না।</p></div>'
+        +'<div class="memory-box"><b>Vocabulary standard</b><p>Core lesson content এবং broad reference vocabulary আলাদা। Reference entries source-backed; level mastery lesson outcomes, grammar, phrases, listening, speaking, writing এবং review দিয়ে বিচার করুন।</p></div>'
         +'<button class="primary-btn block" id="completeLessonBtn">'+(state.completedLessons.includes(id)?'✓ Completed — tap to mark incomplete':'Complete lesson ✓')+'</button>';
     }
     $$('#lessonModal .speak-btn').forEach(b=>b.onclick=()=>speak(b.dataset.say));
@@ -244,17 +248,15 @@
     if(dictionaryLoading) return dictionaryLoading;
     dictionaryLoading=(async()=>{
       const urls=['assets/data/dictionary-01.json','assets/data/dictionary-02.json','assets/data/dictionary-03.json','assets/data/dictionary-04.json'];
-      const parts=await Promise.all(urls.map(async url=>{
-        const r=await fetch(url,{cache:'force-cache'});
-        if(!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-        return r.json();
-      }));
-      extendedDictionary=parts.flat();
-      if(extendedDictionary.length!==17000) console.warn('[LernDE dictionary] expected 17000, got',extendedDictionary.length);
+      const parts=await Promise.all(urls.map(async url=>{const r=await fetch(url,{cache:'force-cache'});if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);return r.json();}));
+      extendedDictionary=parts.flat().map(x=>({...x,_key:dictionaryKey(x.de),_searchDe:String(x.de||'').toLocaleLowerCase('de-DE'),_searchBn:String(x.bn||'').toLocaleLowerCase(),_searchEn:String(x.en||'').toLocaleLowerCase(),_class:dictionaryEntryClass(x),_category:dictionaryCategory(x)}));
+      extendedDictionaryIndex=new Map(extendedDictionary.map(x=>[x._key,x]));
+      if(extendedDictionary.length!==17000)console.warn('[LernDE dictionary] expected 17000, got',extendedDictionary.length);
       return extendedDictionary;
     })().finally(()=>{dictionaryLoading=null;});
     return dictionaryLoading;
   }
+  window.LernDELookupExternal=async word=>{try{await loadExtendedDictionary();const x=extendedDictionaryIndex?.get(dictionaryKey(word));return x?{de:x.de,bn:x.bn,en:x.en,source:x.source||'dictionary'}:null;}catch{return null;}};
 
   function dictionaryKey(v){return String(v||'').trim().toLocaleLowerCase('de-DE');}
   function dictionaryReadMap(){state.dictionaryRead=state.dictionaryRead||{};return state.dictionaryRead;}
@@ -302,21 +304,21 @@
       try{await loadExtendedDictionary();}catch(e){status.textContent='Dictionary load failed.';results.innerHTML='<div class="card mistake-box"><b>Load failed</b><p>'+esc(e.message)+'</p></div>';return;}
     }
     const p=state.dictionaryPrefs||defaultState().dictionaryPrefs;
-    const q=($('#dictSearch')?.value||'').trim().toLocaleLowerCase();
-    const fields=x=>p.language==='DE'?[x.de]:p.language==='BN'?[x.bn]:p.language==='EN'?[x.en]:[x.de,x.bn,x.en];
+    const q=($('#dictSearch')?.value||'').trim().toLocaleLowerCase('de-DE');
+    const fields=x=>p.language==='DE'?[x._searchDe]:p.language==='BN'?[x._searchBn]:p.language==='EN'?[x._searchEn]:[x._searchDe,x._searchBn,x._searchEn];
     const curatedSet=new Set(D.vocabulary.map(v=>dictionaryKey(v.de)));
     const readCount=extendedDictionary.reduce((n,x)=>n+(isDictionaryRead(x.id)?1:0),0),unreadCount=extendedDictionary.length-readCount;
     $('#dictTotal').textContent=extendedDictionary.length.toLocaleString();$('#dictReadCount').textContent=readCount.toLocaleString();$('#dictUnreadCount').textContent=unreadCount.toLocaleString();
     let list=extendedDictionary.filter(x=>{
       const read=isDictionaryRead(x.id);
       if(p.status==='READ'&&!read)return false;if(p.status==='UNREAD'&&read)return false;
-      if(p.entryClass!=='ALL'&&dictionaryEntryClass(x)!==p.entryClass)return false;
-      if(p.category!=='ALL'&&dictionaryCategory(x)!==p.category)return false;
+      if(p.entryClass!=='ALL'&&x._class!==p.entryClass)return false;
+      if(p.category!=='ALL'&&x._category!==p.category)return false;
       return !q||fields(x).some(v=>String(v||'').toLocaleLowerCase().includes(q));
     });
     const cmp=(x,y)=>String(x.de||'').localeCompare(String(y.de||''),'de',{sensitivity:'base'});
     if(p.sort==='AZ')list.sort(cmp);else if(p.sort==='ZA')list.sort((x,y)=>cmp(y,x));else list.sort((x,y)=>{
-      const xc=dictionaryEntryClass(x),yc=dictionaryEntryClass(y);
+      const xc=x._class,yc=y._class;
       const xp=curatedSet.has(dictionaryKey(x.de))?0:xc==='TERM'?1:xc==='REFERENCE'?2:3;
       const yp=curatedSet.has(dictionaryKey(y.de))?0:yc==='TERM'?1:yc==='REFERENCE'?2:3;
       return xp-yp||cmp(x,y);
@@ -326,7 +328,7 @@
     const from=(dictionaryPage-1)*pageSize,page=list.slice(from,from+pageSize);
     status.innerHTML='<div class="dictionary-status-line"><b>'+list.length.toLocaleString()+' matching</b><span>Showing '+(list.length?from+1:0).toLocaleString()+'–'+Math.min(from+pageSize,list.length).toLocaleString()+'</span><span>Page '+dictionaryPage+' / '+pageCount+'</span></div>';
     results.innerHTML=page.length?page.map((x,i)=>{
-      const read=isDictionaryRead(x.id),entryClass=dictionaryEntryClass(x),category=dictionaryCategory(x),example=dictionaryExample(x);
+      const read=isDictionaryRead(x.id),entryClass=x._class,category=x._category,example=dictionaryExample(x);
       return '<article class="card dictionary-row '+(read?'dictionary-read':'')+'"><div class="dictionary-main"><div class="dictionary-title-wrap"><span class="dict-index">'+(from+i+1)+'</span><div><div class="meta-chips"><span class="chip">'+esc(entryClass)+'</span><span class="chip">'+esc(category.replace('_',' & '))+'</span>'+(read?'<span class="chip read-chip">READ ✓</span>':'')+'</div><h3 data-german-text>'+esc(x.de)+'</h3></div></div><button class="icon-btn dict-say" data-say="'+esc(x.de)+'">🔊</button></div><div class="dictionary-meaning-grid"><p><b>বাংলা</b><span>'+esc(x.bn)+'</span></p><p><b>English</b><span>'+esc(x.en||'—')+'</span></p></div><div class="dictionary-example"><small>'+esc(example.kind)+'</small><p data-german-text>'+esc(example.de)+'</p>'+(example.bn?'<span>'+esc(example.bn)+'</span>':'')+'</div><div class="dictionary-actions"><button class="ghost-btn dict-example-say" data-say="'+esc(example.de)+'">🔊 Example</button>'+(read?'<button class="ghost-btn" data-dict-unread="'+esc(x.id)+'">↩ Mark unread</button>':'<button class="primary-btn" data-dict-read="'+esc(x.id)+'">Read ✓</button>')+'</div></article>';
     }).join(''):'<div class="card empty-state">এই filter/search-এ কোনো word নেই।</div>';
     pager.innerHTML=list.length?'<button class="ghost-btn" id="dictFirstPage" '+(dictionaryPage===1?'disabled':'')+'>« First</button><button class="ghost-btn" id="dictPrevPage" '+(dictionaryPage===1?'disabled':'')+'>‹ Prev</button><span>Page <b>'+dictionaryPage+'</b> of <b>'+pageCount+'</b></span><button class="ghost-btn" id="dictNextPage" '+(dictionaryPage===pageCount?'disabled':'')+'>Next ›</button><button class="ghost-btn" id="dictLastPage" '+(dictionaryPage===pageCount?'disabled':'')+'>Last »</button>':'';
@@ -479,7 +481,7 @@
     const level=gameLevel();
     try{
       const pack=await loadLessonVocabulary(level);
-      currentGamePool=pack?.lessons?Object.values(pack.lessons).flat().map(w=>({...w,level})):[];
+      const curated=D.vocabulary.filter(x=>x.level===level);currentGamePool=curated.length?curated:(pack?.lessons?Object.values(pack.lessons).flat().map(w=>({...w,level})):[]);
     }catch(e){console.error('[LernDE game pool]',e);currentGamePool=[];}
     newMeaningGame();newListenGame();newSpellGame();newArticleGame();newSentenceGame();newSpeedGame(false);newCaseGame();newMemoryGame();
   }
@@ -723,7 +725,8 @@
       'Die neue Software wurde schrittweise eingeführt. Nach der Testphase wurden zwei Fehler behoben.',
       'Einerseits spart Homeoffice Fahrzeit, andererseits kann die direkte Kommunikation schwieriger werden.'
     ];
-    $('#newReadingBtn').onclick=()=>$('#readingText').textContent=shuffle(reads)[0];$('#readingText').removeAttribute('data-german-ready');$('#readingText').setAttribute('data-german-text','');window.LernDEGerman?.decorate($('#readingText'));
+    $('#newReadingBtn').onclick=()=>{const el=$('#readingText');el.textContent=shuffle(reads)[0];el.removeAttribute('data-german-ready');el.setAttribute('data-german-text','');window.LernDEGerman?.decorate(el);};
+    const readingEl=$('#readingText');readingEl?.removeAttribute('data-german-ready');readingEl?.setAttribute('data-german-text','');window.LernDEGerman?.decorate(readingEl);
     const listenTexts=['Der Termin wurde auf Freitag verschoben. Bitte bestätigen Sie die neue Uhrzeit.','Wir haben die Ursache gefunden und testen jetzt die Korrektur.','Könnten Sie bitte erläutern, welche Anforderungen heute Priorität haben?'];
     let current=listenTexts[0];
     $('#listenPracticeBtn').onclick=()=>{current=shuffle(listenTexts)[0];$('#listeningTranscript').hidden=true;speak(current,.9);};
@@ -739,7 +742,7 @@
     const blob=new Blob([JSON.stringify({app:'LernDE',version:4,exportedAt:nowIso(),state},null,2)],{type:'application/json'}); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`LernDE-progress-${todayKey()}.json`;a.click();URL.revokeObjectURL(a.href);
   }
   async function importProgress(file){
-    try{const data=JSON.parse(await file.text());const incoming=data.state||data;if(!incoming||!Array.isArray(incoming.completedLessons))throw new Error('Invalid LernDE progress file');state={...defaultState(),...incoming,vocab:incoming.vocab||{},examScores:incoming.examScores||{}};saveState();renderAll();toast('Progress imported.');}catch(e){toast(`Import failed: ${e.message}`);}
+    try{const data=JSON.parse(await file.text());if(data.app&&data.app!=='LernDE')throw new Error('This is not a LernDE progress file');const incoming=data.state||data;if(!incoming||typeof incoming!=='object'||!Array.isArray(incoming.completedLessons))throw new Error('Invalid LernDE progress file');state=normalizeState(incoming);saveState();renderAll();toast('Progress imported safely.');}catch(e){toast(`Import failed: ${e.message}`);}
   }
   function resetProgress(){ if(!confirm('এই device-এর LernDE progress reset করবেন?'))return;state=defaultState();saveState();renderAll();toast('Local progress reset.'); }
   function renderAll(){ renderMetrics(); renderCourse(); renderVocabulary(); renderPhrases(); renderGrammar(); renderPronunciation(); renderMemory(); renderGames(); renderProfessional(); renderGermanyLife(); renderExamCards(); renderReview(); renderMistakes(); renderProgress(); }
@@ -753,7 +756,7 @@
     $$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
     $('#voiceTestBtn').onclick=()=>speak('Guten Tag. Ich heiße Ashraful Islam. Willkommen bei LernDE.');
     $('#vocabSearch').oninput=renderVocabulary;
-    $('#dictSearch').oninput=()=>{dictionaryPage=1;renderDictionary();};
+    $('#dictSearch').oninput=()=>{clearTimeout(dictSearchTimer);dictSearchTimer=setTimeout(()=>{dictionaryPage=1;renderDictionary();},180);};
     ['#dictLanguage','#dictEntryClass','#dictCategory','#dictSort','#dictPageSize'].forEach(sel=>{$(sel).onchange=()=>{dictionaryPage=1;saveDictionaryControls();renderDictionary();};});
     $$('.dictionary-status-tabs [data-dict-status]').forEach(btn=>btn.onclick=()=>{state.dictionaryPrefs={...(state.dictionaryPrefs||{}),status:btn.dataset.dictStatus};dictionaryPage=1;saveState();renderDictionary();});
     $('#dictClearBtn').onclick=()=>{$('#dictSearch').value='';state.dictionaryPrefs={...defaultState().dictionaryPrefs,status:state.dictionaryPrefs?.status||'UNREAD'};dictionaryPage=1;saveState();renderDictionary();};
@@ -783,11 +786,12 @@
   }
 
   async function init(){
-    if(window.LernDEReady) await window.LernDEReady;
+    const moduleReady=window.LernDEReady?await window.LernDEReady:{ok:true};
     bind(); ensureLevelOptions('#vocabLevel'); ensureLevelOptions('#phraseLevel'); ensureLevelOptions('#grammarLevel'); syncDictionaryControls(); if($('#gameLevel'))$('#gameLevel').value=state.selectedLevel||'FOUNDATION'; renderAll();
     const start = $(`#view-${state.lastView}`) ? state.lastView : 'home'; showView(start);
-    if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
-    speechSynthesis?.getVoices?.(); if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>{ if($('#view-pronunciation')?.classList.contains('active')) renderPronunciation(); };
+    if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('[LernDE service worker]',e));
+    if(window.speechSynthesis){window.speechSynthesis.getVoices?.();window.speechSynthesis.onvoiceschanged=()=>{if($('#view-pronunciation')?.classList.contains('active'))renderPronunciation();};}
+    if(moduleReady?.ok===false)toast('Some optional learning content could not be loaded.');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

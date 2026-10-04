@@ -1,18 +1,67 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "brand": "LernDE",
   "currentScope": "Foundation-A1-A2-B1-B2",
   "modules": [
-    {"id":"FOUNDATION","enabled":true,"order":0,"label":"Foundation","bundled":true},
-    {"id":"A1","enabled":true,"order":1,"label":"A1","bundled":true},
-    {"id":"A2","enabled":true,"order":2,"label":"A2","bundled":true},
-    {"id":"B1","enabled":true,"order":3,"label":"B1","bundled":true},
-    {"id":"B2","enabled":true,"order":4,"label":"B2","bundled":true}
+    {
+      "id": "FOUNDATION",
+      "enabled": true,
+      "order": 0,
+      "label": "Foundation",
+      "bundled": true,
+      "lessonVocabularyPath": "assets/data/lesson-vocabulary-foundation.json"
+    },
+    {
+      "id": "A1",
+      "enabled": true,
+      "order": 1,
+      "label": "A1",
+      "bundled": true,
+      "lessonVocabularyPath": "assets/data/lesson-vocabulary-a1.json"
+    },
+    {
+      "id": "A2",
+      "enabled": true,
+      "order": 2,
+      "label": "A2",
+      "bundled": true,
+      "lessonVocabularyPath": "assets/data/lesson-vocabulary-a2.json"
+    },
+    {
+      "id": "B1",
+      "enabled": true,
+      "order": 3,
+      "label": "B1",
+      "bundled": true,
+      "lessonVocabularyPath": "assets/data/lesson-vocabulary-b1.json"
+    },
+    {
+      "id": "B2",
+      "enabled": true,
+      "order": 4,
+      "label": "B2",
+      "bundled": true,
+      "lessonVocabularyPath": "assets/data/lesson-vocabulary-b2.json"
+    }
   ],
   "futureModuleContract": {
     "mode": "split-json",
-    "requiredFiles": ["module.json", "lessons.json", "vocabulary.json", "grammar.json", "phrases.json", "exams.json"],
-    "registrationExample": {"id":"C1","enabled":true,"order":5,"label":"C1","bundled":false,"contentPath":"content/levels/C1"},
-    "notes": "A future level is loaded by the shared module-loader. Do not fork the app shell, progress engine, German word engine or exam renderer."
+    "requiredFiles": [
+      "module.json",
+      "lessons.json",
+      "vocabulary.json",
+      "grammar.json",
+      "phrases.json",
+      "exams.json"
+    ],
+    "registrationExample": {
+      "id": "C1",
+      "enabled": true,
+      "order": 5,
+      "label": "C1",
+      "bundled": false,
+      "contentPath": "content/levels/C1"
+    },
+    "notes": "Future levels reuse the shared app shell. lessonVocabularyPath is optional; core vocabulary.json remains canonical."
   }
 }

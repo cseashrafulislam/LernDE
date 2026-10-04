@@ -1,109 +1,46 @@
 # LernDE — German Learning Platform
 
-**German from Zero to Professional** — a Cloudflare Pages-ready static PWA designed for a Bengali-speaking self-learner.
+LernDE is a mobile-first PWA for Bangla-speaking learners progressing from **Foundation to professional B2**.
 
-Current production curriculum: **Foundation → A1 → A2 → B1 → B2**. The app shell is intentionally level-agnostic so future C1/C2 can be added as content modules instead of rebuilding the application.
+## Product scope
+- 5 learning stages: Foundation, A1, A2, B1, B2
+- 68 guided lessons
+- 180 curated mastery vocabulary cards
+- 3,400 unique source-backed reference terms attached to lessons
+- 17,000 unique CC0 reference dictionary entries
+- 51 grammar topics and 37 reusable phrase patterns
+- 18 pronunciation drills + shadowing
+- 8 active-recall game modes and 4-skills practice
+- 16 Professional German / IT scenarios
+- 12 Germany-life language scenarios
+- 5 original mock exams
+- spaced review, mistake tracking, safe local progress export/import
+- installable/offline PWA
 
-## Production scope (v4)
-- **68 structured lessons** across Foundation, A1, A2, B1 and B2
-- **18-step Foundation bootcamp** covering alphabet/spelling, vowel length, umlauts, diphthongs, ich-/ach-Laut, consonant clusters, R/H/final devoicing, word stress, sentence rhythm, minimal-pair listening, shadowing, survival language and a checkpoint
-- **18 pronunciation drills** with articulation guidance, common traps, slow/natural playback, shadowing and optional browser speech-recognition feedback
-- **180 curated mastery-card entries + 3,400 unique lesson New Words (50 × 68 lessons) + a 17,000-entry source-backed reference dictionary**. Lesson expansion entries never repeat as New Words across the 68 lessons.
-- **51 grammar topics** with canonical rule, memory aid and examples
-- **37 reusable phrase/chunk patterns**
-- Reading, Listening, Writing and Speaking practice
-- Global German word interaction: tap/click a German learning word → highlight → pronounce that word → tiny nearby Bangla meaning
-- Memory Coach, spaced revision, mistake tracking and **8 playable learning games**
-- A1, A2, B1, B2 and B2 Professional **original** practice mocks
-- Professional German, Germany-life language and IT/.NET interview practice
-- Deterministic course-bank Translator/Explain/Corrector (no unsafe client-side secret)
-- Local progress with JSON export/import
-- Responsive mobile navigation/modals
-- PWA manifest, offline service worker and Cloudflare security headers
-- External module loader for future C1/C2 content packs
+## Learning architecture
+LernDE deliberately separates **course mastery** from **reference breadth**. Guided lesson outcomes, curated vocabulary, grammar and phrases are the primary curriculum. The 3,400 lesson reference terms and 17K dictionary broaden exposure but are not presented as official CEFR word lists. Games use curated level vocabulary first.
 
-## Pronunciation standard
-LernDE targets **Standard German (de-DE)**. The pronunciation lab prioritizes the best German voice exposed by the learner's device/browser, teaches articulation, stress and rhythm, and uses shadowing/minimal-pair practice.
+## German word interaction
+German learning text is tappable/clickable site-wide. Pronunciation uses the best available German (`de-DE`) browser/system voice. Meaning lookup priority is curated core → loaded lesson vocabulary → exact 17K dictionary match. Selected validated inflections resolve to a canonical lemma; unsafe suffix-stripping guesses are not used.
 
-Browser TTS quality varies by device, so Bangla pronunciation text and browser speech recognition are **learning aids**, not proof of a native accent. Curated human/native recordings can be added later per content item without changing the lesson engine.
+Bangla transliteration is a learner scaffold, not the pronunciation authority. Device voice quality varies.
 
-## Content integrity
-Published learning facts must come from one canonical content record. Do not duplicate an editable vocabulary or grammar fact across pages. Bangla pronunciation is only an approximation; German sound/audio is primary.
+## Content provenance
+The extended dictionary and lesson reference vocabulary use the CC0 source documented in `THIRD_PARTY_DATA.md`. Canonical lexical content must be a real source-backed German entry; AI-generated/synthetic vocabulary is not accepted as course truth.
 
-The bundled translator is deliberately deterministic over curated course content. Unsupported arbitrary text should not be guessed. If a future unrestricted translator/AI tutor is added, keep provider secrets in a server-side Cloudflare Worker/API, never in this static frontend.
-
-Mocks are original LernDE practice materials and must not be represented as official Goethe/telc papers or certification.
-
-## GitHub → Cloudflare Pages deployment
-Production repository: `cseashrafulislam/LernDE`
-
-Recommended Cloudflare Pages settings:
-- Production branch: `main`
-- Framework preset: **None**
-- Build command: empty
-- Output directory: repository root (`/`)
-- Automatic production deployments: enabled
-
-A push to `main` then becomes a traceable production deployment. Future maintenance should normally be small file/module commits, not full ZIP replacement.
-
-## Validate locally
-With Node.js:
-
+## Quality gate
+Run:
 ```bash
 node tools/validate.mjs
 ```
+The validator checks syntax, required UI, 68 lessons, 3,400 unique source-backed lesson terms, 17,000 unique dictionary entries, PWA cache coverage, game wiring, content provenance and manifest consistency.
 
-Optional local server:
+## Deployment
+Cloudflare Pages can publish the repository as a static site with no build step. For long-term safety, configure GitHub so **LernDE Production QA** is required before changes reach `main`.
 
-```bash
-python -m http.server 8080
-```
-
-Then open `http://localhost:8080`.
-
-## Global German word interaction
-German learning text is rendered with `data-german-text`. Each rendered German word can be tapped/clicked to play **only that word's German pronunciation**, briefly highlight it and show a compact nearby Bangla-meaning bubble. It does not open a large modal and does not play decorative click/beep sounds. Normal UI controls keep their original behavior.
-
-## Add C1/C2 later
-Do **not** fork `index.html`, the progress engine, the review engine, German word engine or exam renderer.
-
-Add a future level under `content/levels/<LEVEL>/`, register it in `config/modules.json`, validate and commit. See:
-- `docs/ARCHITECTURE.md`
-- `docs/ADDING_A_LEVEL.md`
-- `content/module-template/`
-
-## Content status
-The production release separates **teaching content** from **reference breadth**:
-- 68 structured lessons
-- 3,400 unique lesson New Words (50 per lesson, no duplicate New-Word lemma across lessons)
-- 180 curated visual/mastery cards
-- 17,000-entry searchable reference dictionary
-- 51 grammar topics, 37 phrase patterns, 18 pronunciation drills and 8 playable learning games
-
-The 17K dictionary and lesson expansion bank are broad lexical resources, not an official CEFR word list. Core grammar, examples, phrases, pronunciation and exam tasks remain the pedagogically curated layer.
-
-## Vocabulary quality tiers
-1. **Core curated lesson content** — grammar, examples, phrases and visual/mastery cards used for structured CEFR learning.
-2. **Lesson New Word Expansion** — 50 unique real/source-backed German entries per lesson (3,400 total) for lexical breadth. A lemma is introduced as New only once.
-3. **17K reference dictionary** — broad search/reference coverage; it is not represented as an official CEFR list.
-
-Words intentionally reappear in examples, revision and games because repetition is required for learning; only the **New Word count** is deduplicated.
-
-
-## Final production baseline
-
-Accepted production baseline: **2026-10-04**.
-
-Verified repository gates:
-- 5 levels / 68 lessons
-- Foundation alphabet A–Z + Ä Ö Ü ß and 18 lesson-specific Foundation content records
-- 3,400 lesson New Words: exactly 50 per lesson, 3,400 unique German lemmas, zero duplicate New-Word introductions
-- 17,000 unique searchable reference dictionary entries
-- 8 implemented learning-game modes with score/streak/mistake tracking
-- 51 grammar topics, 37 phrase patterns, 18 pronunciation drills, 5 mock-exam sets
-- A1/A2/B1/B2 lesson packs wired into the lesson renderer
-- PWA service worker precaches all five lesson-vocabulary packs
-- direct German Alphabet entry from navigation/home
-- static JavaScript/DOM/data/cache validation gates in `tools/validate.mjs`
-
-The reference dictionary is intentionally separated from curated teaching content; broad reference coverage is not presented as an official CEFR vocabulary list.
+## Limits
+- Browser speech synthesis/recognition varies by device.
+- Recognition similarity is not a native-accent score.
+- Germany-life modules teach language; current rules must be checked from current official sources.
+- Mock exams are original practice, not official Goethe/telc papers.
+- Full unrestricted translation/AI requires a server-side provider; never put provider secrets in the static frontend.
