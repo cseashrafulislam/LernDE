@@ -23,7 +23,8 @@
     voiceURI: '',
     voiceRate: 0.9,
     game: {score:0,streak:0,best:0,total:0,correct:0},
-    gameMistakes: {}
+    gameMistakes: {},
+    dictionaryRead: {}
   });
 
   let state = loadState();
@@ -46,6 +47,7 @@
   let extendedDictionary = null;
   const lessonVocabularyCache = {};
   let dictionaryLoading = null;
+  let dictionaryPage = 1;
   let currentGamePool = [];
   let currentCaseQuestion = null;
   let memoryGameState = null;
@@ -252,6 +254,16 @@
     return dictionaryLoading;
   }
 
+  function dictionaryReadMap(){
+    state.dictionaryRead=state.dictionaryRead||{};
+    return state.dictionaryRead;
+  }
+  function isDictionaryRead(id){ return !!dictionaryReadMap()[id]; }
+  function setDictionaryRead(id,read){
+    if(read) dictionaryReadMap()[id]=true;
+    else delete dictionaryReadMap()[id];
+    saveState();
+  }
   async function renderDictionary(){
     const status=$('#dictStatus'), results=$('#dictResults');
     if(!status||!results) return;
@@ -266,22 +278,53 @@
     }
     const q=$('#dictSearch')?.value.trim()||'';
     const lang=$('#dictLanguage')?.value||'ALL';
+    const readFilter=$('#dictReadFilter')?.value||'UNREAD';
+    const pageSize=Number($('#dictPageSize')?.value||20);
+    const readMap=dictionaryReadMap();
+    const readCount=Object.keys(readMap).filter(id=>readMap[id]).length;
+    const unreadCount=Math.max(0,extendedDictionary.length-readCount);
     $('#dictTotal').textContent=extendedDictionary.length.toLocaleString();
-    if(q.length<2){
-      status.textContent='Search করতে অন্তত 2 অক্ষর লিখুন। 17,000 entry একসাথে render করা হয় না—mobile performance রক্ষার জন্য।';
-      results.innerHTML='';
-      return;
-    }
+    $('#dictReadCount').textContent=readCount.toLocaleString();
+    $('#dictUnreadCount').textContent=unreadCount.toLocaleString();
+
     const needle=q.toLocaleLowerCase();
     const fields=x=>lang==='DE'?[x.de]:lang==='BN'?[x.bn]:lang==='EN'?[x.en]:[x.de,x.bn,x.en];
-    const list=extendedDictionary.filter(x=>fields(x).some(v=>String(v||'').toLocaleLowerCase().includes(needle))).slice(0,120);
-    const total=extendedDictionary.reduce((n,x)=>n+(fields(x).some(v=>String(v||'').toLocaleLowerCase().includes(needle))?1:0),0);
-    status.textContent=`${total.toLocaleString()} result${total===1?'':'s'} found${total>120?' • showing first 120':''}.`;
-    results.innerHTML=list.length?list.map(x=>`<article class="card dictionary-row">
-      <div class="dictionary-main"><div><span class="vocab-level">${x.referenceOnly?'REFERENCE':'TERM'}</span><h3 data-german-text>${esc(x.de)}</h3></div><button class="icon-btn dict-say" data-say="${esc(x.de)}">🔊</button></div>
-      <p><b>বাংলা:</b> ${esc(x.bn)}</p><p class="muted"><b>English:</b> ${esc(x.en||'—')}</p>
-    </article>`).join(''):'<div class="card empty-state">কোনো matching entry পাওয়া যায়নি।</div>';
+    let list=extendedDictionary.filter(x=>{
+      const read=isDictionaryRead(x.id);
+      if(readFilter==='READ'&&!read) return false;
+      if(readFilter==='UNREAD'&&read) return false;
+      if(!needle) return true;
+      return fields(x).some(v=>String(v||'').toLocaleLowerCase().includes(needle));
+    });
+
+    const total=list.length;
+    const pageCount=Math.max(1,Math.ceil(total/pageSize));
+    dictionaryPage=clamp(dictionaryPage,1,pageCount);
+    const from=(dictionaryPage-1)*pageSize;
+    const page=list.slice(from,from+pageSize);
+
+    const filterLabel=readFilter==='READ'?'Read':readFilter==='ALL'?'All':'Unread';
+    status.textContent=`${filterLabel}: ${total.toLocaleString()} word${total===1?'':'s'}${q?' • search: "'+q+'"':''} • showing ${total?from+1:0}-${Math.min(from+pageSize,total)}`;
+    $('#dictPageInfo').textContent=`Page ${dictionaryPage.toLocaleString()} / ${pageCount.toLocaleString()}`;
+    $('#dictPrevBtn').disabled=dictionaryPage<=1;
+    $('#dictNextBtn').disabled=dictionaryPage>=pageCount;
+
+    results.innerHTML=page.length?page.map(x=>{
+      const read=isDictionaryRead(x.id);
+      return `<article class="card dictionary-row ${read?'dictionary-read':''}">
+        <div class="dictionary-main"><div><span class="vocab-level">${read?'READ':(x.referenceOnly?'REFERENCE':'TERM')}</span><h3 data-german-text>${esc(x.de)}</h3></div><button class="icon-btn dict-say" data-say="${esc(x.de)}">🔊</button></div>
+        <p><b>বাংলা:</b> ${esc(x.bn)}</p><p class="muted"><b>English:</b> ${esc(x.en||'—')}</p>
+        <div class="button-row wrap"><button class="${read?'ghost-btn':'primary-btn'} dict-read-toggle" data-dict-id="${esc(x.id)}" data-read="${read?'1':'0'}">${read?'↩ Mark Unread':'✓ Mark Read'}</button></div>
+      </article>`;
+    }).join(''):'<div class="card empty-state">এই filter/search-এ কোনো word নেই।</div>';
+
     $$('#dictResults .dict-say').forEach(b=>b.onclick=()=>speak(b.dataset.say,.88));
+    $$('#dictResults .dict-read-toggle').forEach(b=>b.onclick=()=>{
+      const wasRead=b.dataset.read==='1';
+      setDictionaryRead(b.dataset.dictId,!wasRead);
+      if(!wasRead && readFilter==='UNREAD' && page.length===1 && dictionaryPage>1) dictionaryPage--;
+      renderDictionary();
+    });
     window.LernDEGerman?.decorate?.(results);
   }
 
@@ -690,7 +733,7 @@
     $$('[data-close-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeModal));
     $$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
     $('#voiceTestBtn').onclick=()=>speak('Guten Tag. Ich heiße Ashraful Islam. Willkommen bei LernDE.');
-    $('#vocabSearch').oninput=renderVocabulary; $('#dictSearch').oninput=renderDictionary; $('#dictLanguage').onchange=renderDictionary; $('#dictClearBtn').onclick=()=>{$('#dictSearch').value='';renderDictionary();}; $('#vocabLevel').onchange=renderVocabulary; $('#vocabStatus').onchange=renderVocabulary; $('#randomVocabBtn').onclick=()=>{$('#vocabSearch').value='';$('#vocabLevel').value='ALL';renderVocabulary();const cards=$$('#vocabGrid .vocab-card');if(cards.length)cards[Math.floor(Math.random()*cards.length)].scrollIntoView({behavior:'smooth',block:'center'});};
+    $('#vocabSearch').oninput=renderVocabulary; $('#dictSearch').oninput=()=>{dictionaryPage=1;renderDictionary();}; $('#dictLanguage').onchange=()=>{dictionaryPage=1;renderDictionary();}; $('#dictReadFilter').onchange=()=>{dictionaryPage=1;renderDictionary();}; $('#dictPageSize').onchange=()=>{dictionaryPage=1;renderDictionary();}; $('#dictPrevBtn').onclick=()=>{if(dictionaryPage>1){dictionaryPage--;renderDictionary();window.scrollTo({top:0,behavior:'smooth'});}}; $('#dictNextBtn').onclick=()=>{dictionaryPage++;renderDictionary();window.scrollTo({top:0,behavior:'smooth'});}; $('#dictClearBtn').onclick=()=>{$('#dictSearch').value='';dictionaryPage=1;renderDictionary();}; $('#vocabLevel').onchange=renderVocabulary; $('#vocabStatus').onchange=renderVocabulary; $('#randomVocabBtn').onclick=()=>{$('#vocabSearch').value='';$('#vocabLevel').value='ALL';renderVocabulary();const cards=$$('#vocabGrid .vocab-card');if(cards.length)cards[Math.floor(Math.random()*cards.length)].scrollIntoView({behavior:'smooth',block:'center'});};
     $('#phraseLevel').onchange=renderPhrases; $('#phraseSearch').oninput=renderPhrases; $('#grammarLevel').onchange=renderGrammar;
     $('#voiceSelect').onchange=e=>{state.voiceURI=e.target.value;saveState();renderPronunciation();speak('Guten Tag. Willkommen bei LernDE.',.9);}; $('#voiceRate').onchange=e=>{state.voiceRate=Number(e.target.value);saveState();}; $('#voiceCalibrationBtn').onclick=()=>speak('Guten Tag. Ich lerne Deutsch. Heute übe ich Aussprache, Rhythmus und Satzmelodie.',state.voiceRate);
     $('#shadowLevel').onchange=chooseShadow; $('#newShadowBtn').onclick=chooseShadow; $('#shadowSlowBtn').onclick=()=>currentShadow&&speak(currentShadow.text,.68); $('#shadowNaturalBtn').onclick=()=>currentShadow&&speak(currentShadow.text,Math.max(.88,state.voiceRate||.9)); $('#shadowRecordBtn').onclick=()=>currentShadow&&startRecognition(currentShadow.text,'#shadowResult');
