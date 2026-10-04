@@ -73,7 +73,14 @@ Add a future level under `content/levels/<LEVEL>/`, register it in `config/modul
 - `content/module-template/`
 
 ## Content status
-The application/runtime is production-structured; the vocabulary bank is intentionally **curated rather than count-inflated**. The current verified seed is 180 entries. Expansion toward the 10,000-entry target should be reviewed in batches with stable IDs, CEFR/topic metadata, German forms, contextual Bangla meaning and pronunciation checks.
+The production release separates **teaching content** from **reference breadth**:
+- 68 structured lessons
+- 3,400 unique lesson New Words (50 per lesson, no duplicate New-Word lemma across lessons)
+- 180 curated visual/mastery cards
+- 17,000-entry searchable reference dictionary
+- 51 grammar topics, 37 phrase patterns, 18 pronunciation drills and 8 playable learning games
+
+The 17K dictionary and lesson expansion bank are broad lexical resources, not an official CEFR word list. Core grammar, examples, phrases, pronunciation and exam tasks remain the pedagogically curated layer.
 
 ## Vocabulary quality tiers
 1. **Core curated lesson content** — grammar, examples, phrases and visual/mastery cards used for structured CEFR learning.
