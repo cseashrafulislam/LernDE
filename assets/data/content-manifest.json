@@ -1,16 +1,18 @@
 {
   "levels": 5,
   "lessons": 68,
-  "grammarTopics": 51,
+  "grammarTopics": 70,
   "vocabularyEntries": 180,
-  "phraseEntries": 37,
+  "phraseEntries": 504,
   "mockExams": 5,
   "professionalTopics": 16,
   "pronunciationDrills": 18,
   "germanyLifeTopics": 12,
-  "generated": "2026-10-04",
+  "generated": "2026-10-05",
   "lessonVocabularyEntries": 3400,
   "uniqueNewLessonLemmas": 3400,
   "extendedDictionaryEntries": 17000,
-  "gameModes": 8
+  "gameModes": 8,
+  "sentencePractice": "auto-check",
+  "dictionaryLoading": "chunked-low-memory"
 }

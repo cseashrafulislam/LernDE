@@ -44,3 +44,18 @@ Cloudflare Pages can publish the repository as a static site with no build step.
 - Germany-life modules teach language; current rules must be checked from current official sources.
 - Mock exams are original practice, not official Goethe/telc papers.
 - Full unrestricted translation/AI requires a server-side provider; never put provider secrets in the static frontend.
+
+## 2026-10 integrated learning release
+
+- 70 curated grammar topics with 5 full example sentences per topic.
+- 504 curated phrase-bank entries across Foundation to B2.
+- Inline shuffled-word sentence practice auto-checks as soon as all tokens are placed; there is no separate Check button for sentence arranging.
+- Roadmap, Memory Coach, Smart Revision, weak areas and progress are consolidated into one Learning Hub.
+- Learner profile name is editable. Personalization affects presentation only; canonical course data, IDs and saved progress remain stable.
+- Feedback/correction contact: cseashrafulislam@gmail.com.
+- 17K dictionary uses bounded-memory chunk loading. Only required chunks/pages are held in RAM; visited chunks are runtime-cached by the service worker instead of install-preloading the whole dictionary.
+- Startup renders only the active view instead of building all hidden pages at launch.
+- PWA Back/Forward history, install fallback guidance and speech-recognition abort/error handling are included.
+- Game Lab focuses one mode at a time with mission, score, streak and accuracy feedback.
+
+Bangla pronunciation is supportive scaffolding; German audio remains the pronunciation reference.

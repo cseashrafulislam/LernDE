@@ -19,22 +19,22 @@
         <div><strong>LernDE</strong><small>Foundation → B2</small></div>
         <button id="closeMenuBtn" class="icon-btn mobile-only" aria-label="Close menu">✕</button>
       </div>
-      <div class="learner-card">
-        <span class="learner-avatar">AI</span>
-        <div><strong>Ashraful Islam</strong><small>Self Learner</small></div>
-      </div>
+      <button id="learnerCard" class="learner-card" type="button" aria-label="Open learner profile and About LernDE">
+        <span id="learnerAvatar" class="learner-avatar">AI</span>
+        <div><strong id="learnerName">Ashraful Islam</strong><small>Self Learner • My Profile</small></div>
+        <span class="learner-chevron">›</span>
+      </button>
       <nav id="mainNav" class="nav-list">
         <div class="nav-section-label">LEARN</div>
         <button class="nav-item active" data-view="home"><span>🏠</span>Dashboard</button>
         <button class="nav-item alphabet-nav" data-open-lesson="FOUNDATION-01"><span>🔤</span>German Alphabet</button>
         <button class="nav-item" data-view="course"><span>🚀</span>Foundation → B2</button>
-        <button class="nav-item" data-view="roadmap"><span>🧭</span>Roadmap & Mastery</button>
+        <button class="nav-item" data-view="hub"><span>🧭</span>Learning Hub</button>
         <button class="nav-item" data-view="vocabulary"><span>🖼️</span>Visual Vocabulary</button>
         <button class="nav-item" data-view="dictionary"><span>📖</span>17K Dictionary</button>
         <button class="nav-item" data-view="phrases"><span>💬</span>Phrase Bank</button>
         <button class="nav-item" data-view="grammar"><span>🧩</span>Grammar Lab</button>
         <button class="nav-item" data-view="pronunciation"><span>🔊</span>Pronunciation Lab</button>
-        <button class="nav-item" data-view="memory"><span>🧠</span>Memory Coach</button>
         <button class="nav-item" data-view="games"><span>🎮</span>Learn by Game</button>
         <button class="nav-item" data-view="skills"><span>🎧</span>4 Skills Practice</button>
         <button class="nav-item" data-view="translator"><span>🔄</span>Translator & Corrector</button>
@@ -42,10 +42,8 @@
         <button class="nav-item" data-view="professional"><span>💼</span>Professional German</button>
         <button class="nav-item" data-view="germany"><span>🇩🇪</span>Germany Life</button>
         <button class="nav-item" data-view="exam"><span>🎯</span>Mock Exam Center</button>
-        <button class="nav-item" data-view="review"><span>🔁</span>Smart Revision</button>
-        <button class="nav-item" data-view="mistakes"><span>❌</span>My Mistakes</button>
-        <button class="nav-item" data-view="progress"><span>📊</span>My Progress</button>
-        <button class="nav-item" data-view="about"><span>🛡️</span>Quality & Standard</button>
+        <div class="nav-section-label">PROFILE</div>
+        <button class="nav-item" data-view="about"><span>👤</span>About & My Profile</button>
       </nav>
       <div class="sidebar-foot">
         <div class="side-progress-head"><span>Overall progress</span><strong id="sideProgressText">0%</strong></div>
@@ -64,7 +62,7 @@
         </div>
         <div class="top-actions">
           <button id="voiceTestBtn" class="ghost-btn">🔊 Test German Voice</button>
-          <button id="installBtn" class="primary-btn" hidden>Install App</button>
+          <button id="installBtn" class="primary-btn">📲 Install / Add App</button>
         </div>
       </header>
 
@@ -77,7 +75,7 @@
             <div class="hero-actions">
               <button class="primary-btn" data-open-lesson="FOUNDATION-01">🔤 Start German Alphabet</button>
               <button class="ghost-btn" data-jump="course">▶ Full Course</button>
-              <button class="ghost-btn" data-jump="review">🔁 Review Weak Words</button>
+              <button class="ghost-btn" data-jump="hub" data-hub-target="hub-review">🔁 Review Weak Words</button>
             </div>
             <div class="trust-line"><span>✓ CEFR-progressive curriculum</span><span>✓ Source-backed lexicon</span><span>✓ German audio + Bangla support</span></div>
           </div>
@@ -104,7 +102,7 @@
         <div class="module-grid">
           <button class="module-card" data-open-lesson="FOUNDATION-01"><span>🔤</span><h3>German Alphabet</h3><p>A–Z + Ä Ö Ü ß • letter names • audio • spelling</p></button>
           <button class="module-card" data-jump="course"><span>🚀</span><h3>Foundation → B2</h3><p>68 guided lessons • curated core + source-backed reference</p></button>
-          <button class="module-card" data-jump="roadmap"><span>🧭</span><h3>Roadmap & Mastery</h3><p>what to master from zero through professional B2</p></button>
+          <button class="module-card" data-jump="hub" data-hub-target="hub-roadmap"><span>🧭</span><h3>Learning Hub</h3><p>roadmap, memory, revision, mistakes and progress</p></button>
           <button class="module-card" data-jump="vocabulary"><span>🖼️</span><h3>Visual Vocabulary</h3><p>image/icon memory + German audio</p></button>
           <button class="module-card" data-jump="dictionary"><span>📖</span><h3>17K Dictionary</h3><p>17,000 source-backed German ↔ বাংলা/English terms</p></button>
           <button class="module-card" data-jump="grammar"><span>🧩</span><h3>Grammar Lab</h3><p>actual rule + Bangla memory trick</p></button>
@@ -114,7 +112,7 @@
           <button class="module-card" data-jump="professional"><span>💼</span><h3>Professional German</h3><p>job, meeting, IT and interview</p></button>
           <button class="module-card" data-jump="germany"><span>🇩🇪</span><h3>Germany Life</h3><p>real-life language for settling in</p></button>
           <button class="module-card" data-jump="exam"><span>🎯</span><h3>Mock Exam Center</h3><p>A1, A2, B1, B2 + workplace</p></button>
-          <button class="module-card" data-jump="review"><span>🧠</span><h3>Smart Revision</h3><p>Again / Hard / Good / Easy</p></button>
+          <button class="module-card" data-jump="hub" data-hub-target="hub-review"><span>🧠</span><h3>Smart Revision</h3><p>weak areas, recall and spaced review</p></button>
         </div>
       </section>
 
@@ -125,26 +123,46 @@
         <div id="lessonGrid" class="lesson-grid"></div>
       </section>
 
-      <section class="view" id="view-roadmap">
-        <div class="section-heading"><div><span class="section-tag">ZERO → PROFESSIONAL B2</span><h2>Roadmap & Mastery Standard</h2><p>শুধু word count নয়—প্রতিটি level-এ কী বুঝবেন, কী বলতে পারবেন, কী লিখতে পারবেন এবং কীভাবে real situation handle করবেন সেটাই target।</p></div></div>
+      <section class="view" id="view-hub">
+        <div class="section-heading"><div><span class="section-tag">ONE PLACE TO LEARN • REMEMBER • REVIEW</span><h2>Learning Hub</h2><p>Roadmap, mastery, memory, sentence practice, revision, mistakes এবং progress—সব এক জায়গায়।</p></div></div>
+        <div class="metric-grid hub-metrics">
+          <article><span>Lessons</span><strong id="hubLessons">0/68</strong><small>course progress</small></article>
+          <article><span>Review due</span><strong id="hubDue">0</strong><small>spaced review</small></article>
+          <article><span>Weak areas</span><strong id="hubWeak">0</strong><small>words + game mistakes</small></article>
+          <article><span>Sentence practice</span><strong id="hubSentence">0%</strong><small>auto-check accuracy</small></article>
+        </div>
+        <div class="hub-tabs card">
+          <button class="ghost-btn" data-hub-target="hub-roadmap">🧭 Roadmap</button>
+          <button class="ghost-btn" data-hub-target="hub-memory">🧠 Memory</button>
+          <button class="ghost-btn" data-hub-target="hub-review">🔁 Revision</button>
+          <button class="ghost-btn" data-hub-target="hub-mistakes">🎯 Weak areas</button>
+          <button class="ghost-btn" data-hub-target="hub-progress">📊 Progress</button>
+        </div>
+
+        <div id="hub-roadmap" class="hub-section-anchor section-heading compact"><div><span class="section-tag">ZERO → PROFESSIONAL B2</span><h3>Roadmap & Mastery</h3></div></div>
         <div class="roadmap-grid">
-          <article class="card stage-card"><span class="stage-code">0</span><h3>Foundation</h3><p>Alphabet, German sound system, spelling, greetings, numbers, time এবং basic sentence awareness.</p><ul><li>A–Z + Ä Ö Ü ß</li><li>Listen-and-repeat habit</li><li>Essential survival language</li></ul></article>
-          <article class="card stage-card"><span class="stage-code">A1</span><h3>Everyday basics</h3><p>নিজের পরিচয়, পরিবার, shopping, travel, simple appointment এবং basic present-tense interaction.</p><ul><li>Core word order</li><li>Nominativ / Akkusativ basics</li><li>Short messages and questions</li></ul></article>
-          <article class="card stage-card"><span class="stage-code">A2</span><h3>Independent routines</h3><p>Housing, health, work routines, services, past events এবং everyday problem solving.</p><ul><li>Dativ + common prepositions</li><li>Perfekt and connected sentences</li><li>Practical phone/office language</li></ul></article>
-          <article class="card stage-card"><span class="stage-code">B1</span><h3>Independent communication</h3><p>Opinion, experience, formal email, workplace updates এবং longer connected speech.</p><ul><li>Relative clauses and richer connectors</li><li>Structured writing</li><li>Explain reasons and decisions</li></ul></article>
-          <article class="card stage-card featured"><span class="stage-code">B2</span><h3>Professional German</h3><p>Argumentation, formal register, meetings, requirements, incidents, technical explanation এবং confident workplace communication.</p><ul><li>Passive, Konjunktiv, nominalisation</li><li>Trade-offs and polite disagreement</li><li>Detailed writing + integrated 4 skills</li></ul></article>
+          <article class="card stage-card"><span class="stage-code">0</span><h3>Foundation</h3><p>Alphabet, sound system, spelling, greetings, numbers, time and sentence awareness.</p><ul><li>A–Z + Ä Ö Ü ß</li><li>Listen and repeat</li><li>Survival language</li></ul></article>
+          <article class="card stage-card"><span class="stage-code">A1</span><h3>Everyday basics</h3><p>Identity, family, shopping, travel and predictable daily interaction.</p><ul><li>Core word order</li><li>Nominativ / Akkusativ</li><li>Short messages</li></ul></article>
+          <article class="card stage-card"><span class="stage-code">A2</span><h3>Independent routines</h3><p>Housing, health, services, work routines and everyday problem solving.</p><ul><li>Dativ + prepositions</li><li>Perfekt</li><li>Phone/office German</li></ul></article>
+          <article class="card stage-card"><span class="stage-code">B1</span><h3>Independent communication</h3><p>Opinion, experience, email, workplace updates and connected speech.</p><ul><li>Subordinate/relative clauses</li><li>Structured writing</li><li>Reasons and decisions</li></ul></article>
+          <article class="card stage-card featured"><span class="stage-code">B2</span><h3>Professional German</h3><p>Argumentation, meetings, technical explanation, formal register and confident workplace language.</p><ul><li>Passive + Konjunktiv</li><li>Trade-offs</li><li>Integrated 4 skills</li></ul></article>
         </div>
-        <div class="card mastery-board">
-          <div><span class="section-tag">MASTERY LOOP</span><h3>Learn → Use → Get feedback → Review → Reuse</h3><p>Lesson শেষ করাই mastery নয়। একই language vocabulary, phrase, grammar, listening, speaking, game এবং spaced review-এ পুনরায় ব্যবহার করুন।</p></div>
-          <div class="mastery-pills"><span>📚 Lesson</span><span>🔊 Pronunciation</span><span>💬 Phrase</span><span>🧩 Grammar</span><span>🎧 4 Skills</span><span>🔁 Review</span><span>🎯 Mock</span></div>
-        </div>
-        <div class="mastery-table-wrap card"><table class="mastery-table"><thead><tr><th>Stage</th><th>Speaking</th><th>Writing</th><th>Listening / Reading</th><th>Ready when…</th></tr></thead><tbody>
-          <tr><td>Foundation</td><td>Sounds, greetings, spelling</td><td>Names, numbers, short forms</td><td>Recognise core sounds/words</td><td>You can copy German sound patterns reliably.</td></tr>
-          <tr><td>A1</td><td>Short everyday exchanges</td><td>Simple messages</td><td>Slow familiar content</td><td>You can handle predictable daily situations.</td></tr>
-          <tr><td>A2</td><td>Routine explanations</td><td>Connected short text</td><td>Main points in common situations</td><td>You can solve normal daily tasks with less help.</td></tr>
-          <tr><td>B1</td><td>Experiences and opinions</td><td>Structured email/text</td><td>Connected standard German</td><td>You can communicate independently on familiar topics.</td></tr>
-          <tr><td>B2</td><td>Arguments and professional discussion</td><td>Clear detailed formal text</td><td>Complex standard content</td><td>You can explain, negotiate, clarify and respond professionally.</td></tr>
-        </tbody></table></div>
+        <div class="card mastery-board"><div><span class="section-tag">MASTERY LOOP</span><h3>Learn → Arrange → Listen → Speak → Review → Reuse</h3><p>Lesson finish করা mastery নয়। একই sentence এবং rule বারবার different activity-তে ব্যবহার করুন।</p></div><div class="mastery-pills"><span>📚 Lesson</span><span>🧩 Arrange</span><span>🔊 Audio</span><span>🗣 Speak</span><span>🎮 Game</span><span>🔁 Review</span><span>🎯 Mock</span></div></div>
+
+        <div id="hub-memory" class="hub-section-anchor section-heading compact"><div><span class="section-tag">REMEMBER FASTER</span><h3>Memory Coach</h3><p>Association, chunks, active recall and spaced repetition.</p></div></div>
+        <div id="memoryRules" class="memory-grid"></div>
+        <div class="card recall-card"><span class="section-tag">3-SECOND RECALL</span><h3 id="recallPrompt">Start a quick recall round</h3><div id="recallAnswer" class="recall-answer" hidden></div><div class="button-row"><button id="recallNewBtn" class="primary-btn">New card</button><button id="recallRevealBtn" class="ghost-btn">Reveal</button></div></div>
+
+        <div id="hub-review" class="hub-section-anchor section-heading compact"><div><span class="section-tag">SPACED REVISION</span><h3>Smart Revision</h3><p>Weak item আগে ফিরে আসবে; example sentence arrange করেও review হবে।</p></div></div>
+        <div class="metric-grid"><article><span>Due now</span><strong id="reviewDue">0</strong><small>scheduled items</small></article><article><span>Known</span><strong id="reviewKnown">0</strong><small>vocabulary</small></article><article><span>Weak</span><strong id="reviewWeak">0</strong><small>Again/Hard</small></article><article><span>Drafts</span><strong id="reviewDrafts">0</strong><small>writing saved</small></article></div>
+        <div id="reviewCard" class="card review-card"></div>
+
+        <div id="hub-mistakes" class="hub-section-anchor section-heading compact"><div><span class="section-tag">TARGET THE WEAK SPOTS</span><h3>My Mistakes</h3><p>Game, vocabulary এবং sentence practice-এর weak item এখানে focus করুন।</p></div></div>
+        <div id="mistakeList" class="phrase-list"></div>
+
+        <div id="hub-progress" class="hub-section-anchor section-heading compact"><div><span class="section-tag">YOUR DATA</span><h3>My Progress</h3><p>Progress এই device-এ থাকে; export/import দিয়ে backup বা device move করা যাবে।</p></div></div>
+        <div id="progressSummary" class="progress-summary"></div>
+        <div class="card"><div class="button-row wrap"><button id="exportBtn" class="primary-btn">Export progress JSON</button><label class="ghost-btn file-label">Import progress<input id="importInput" type="file" accept="application/json" hidden /></label><button id="resetBtn" class="danger-btn">Reset local progress</button></div></div>
       </section>
 
       <section class="view" id="view-vocabulary">
@@ -180,19 +198,20 @@
           <select id="dictPageSize" aria-label="Words per page"><option value="15">15 / page</option><option value="20">20 / page</option></select>
           <button id="dictClearBtn" class="ghost-btn">Reset filters</button>
         </div>
-        <div id="dictStatus" class="card dictionary-status">Dictionary first load-এ 4টি data chunk lazy-load হবে। Default list = Unread.</div>
+        <div id="dictStatus" class="card dictionary-status">Low-memory mode: শুধু দরকারি dictionary chunk/page load হবে। 17K entries একসাথে RAM-এ রাখা হবে না।</div>
         <div id="dictResults" class="dictionary-results"></div>
         <nav id="dictPager" class="dictionary-pager" aria-label="Dictionary pagination"></nav>
       </section>
 
       <section class="view" id="view-phrases">
-        <div class="section-heading"><div><span class="section-tag">CHUNK LEARNING</span><h2>Phrase Bank</h2><p>একটা pattern শিখে অনেক sentence বানানোর জন্য reusable chunks।</p></div></div>
+        <div class="section-heading"><div><span class="section-tag">500+ CURATED CHUNKS</span><h2>Phrase Bank</h2><p>Daily life থেকে B2 professional German—phrase দেখুন, শুনুন, তারপর shuffled words সাজিয়ে নিজে build করুন।</p></div><div class="section-stat"><strong id="phraseCount">500+</strong><span>curated phrases</span></div></div>
         <div class="toolbar card"><select id="phraseLevel"><option value="ALL">All levels</option></select><input id="phraseSearch" type="search" placeholder="Search phrase or meaning…" /></div>
         <div id="phraseList" class="phrase-list"></div>
+        <nav id="phrasePager" class="dictionary-pager" aria-label="Phrase pagination"></nav>
       </section>
 
       <section class="view" id="view-grammar">
-        <div class="section-heading"><div><span class="section-tag">SIMPLE BUT CORRECT</span><h2>Grammar Lab</h2><p>Rule → example → memory tip → common mistake → self-test। Search বা level filter দিয়ে দ্রুত rule খুঁজুন।</p></div></div>
+        <div class="section-heading"><div><span class="section-tag">70 TOPICS • 5 EXAMPLES EACH</span><h2>Grammar Lab</h2><p>Rule → 5 examples → auto sentence arrange → memory tip → common mistake → self-test। আলাদা Check button নেই; sentence complete হলেই result দেখাবে।</p></div></div>
         <div class="split-layout grammar-layout">
           <aside class="card list-panel grammar-list-panel">
             <input id="grammarSearch" type="search" autocomplete="off" placeholder="Search grammar rule…" />
@@ -223,28 +242,28 @@
         </div>
       </section>
 
-      <section class="view" id="view-memory">
-        <div class="section-heading"><div><span class="section-tag">REMEMBER FASTER</span><h2>Memory Coach</h2><p>German মুখস্থ না করে association, chunk, active recall এবং spaced review ব্যবহার করুন।</p></div></div>
-        <div id="memoryRules" class="memory-grid"></div>
-        <div class="card recall-card"><span class="section-tag">3-SECOND RECALL</span><h3 id="recallPrompt">Start a quick recall round</h3><div id="recallAnswer" class="recall-answer" hidden></div><div class="button-row"><button id="recallNewBtn" class="primary-btn">New card</button><button id="recallRevealBtn" class="ghost-btn">Reveal</button></div></div>
-      </section>
-
-
       <section class="view" id="view-games">
         <div class="section-heading"><div><span class="section-tag">ACTIVE RECALL • LISTENING • GRAMMAR</span><h2>German Game Lab — 8 Modes</h2><p>প্রতিটি game শেখার কাজে লাগবে। Wrong answer weak-item tracking-এ যাবে; score শুধু feedback, লক্ষ্য mastery।</p></div></div>
-        <div class="game-control card">
-          <div><label><b>Level</b></label><select id="gameLevel"><option value="FOUNDATION">Foundation — 900 words</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option></select></div>
-          <div class="game-score"><span>Score <b id="gameScore">0</b></span><span>Streak <b id="gameStreak">0</b></span><span>Best <b id="gameBest">0</b></span><button id="gameResetScore" class="ghost-btn">Reset round</button></div>
+        <div class="game-hero card">
+          <div><span class="section-tag">PLAY • LEARN • REPEAT</span><h3>আজকের mission: 20টি correct answer</h3><p id="gameMissionText">0 / 20 correct today</p><div class="progress-track"><span id="gameMissionBar"></span></div></div>
+          <button id="gameQuickMix" class="primary-btn">🎲 Surprise me</button>
         </div>
-        <div class="game-grid pro-games">
-          <article class="card game-card"><span>🧠</span><h3>Meaning Sprint</h3><p>German → বাংলা অর্থ দ্রুত চিনুন।</p><p id="gameMeaningPrompt">Start a round.</p><div id="gameMeaningOptions" class="game-options"></div><button id="gameMeaningNew" class="primary-btn">New round</button></article>
-          <article class="card game-card"><span>🎧</span><h3>Listen & Pick</h3><p>Text না দেখে German শুনে সঠিক অর্থ বাছুন।</p><button id="gameListenPlay" class="primary-btn">🔊 Play word</button><div id="gameListenOptions" class="game-options"></div><div id="gameListenResult" class="muted"></div><button id="gameListenNew" class="ghost-btn">Next</button></article>
-          <article class="card game-card"><span>✍️</span><h3>Spelling Dictation</h3><p>শব্দ শুনুন, German spelling লিখুন।</p><button id="gameSpellPlay" class="ghost-btn">🔊 Hear word</button><input id="gameSpellInput" type="text" autocomplete="off" placeholder="German word…" /><button id="gameSpellCheck" class="primary-btn">Check</button><div id="gameSpellResult" class="muted"></div><button id="gameSpellNew" class="ghost-btn">Next</button></article>
-          <article class="card game-card"><span>🎯</span><h3>Article Battle</h3><p>Known noun-এর der / die / das নির্বাচন করুন।</p><p id="gameArticlePrompt">Pick der / die / das.</p><div class="game-options"><button data-article="der">der</button><button data-article="die">die</button><button data-article="das">das</button></div><div id="gameArticleResult" class="muted"></div><button id="gameArticleNew" class="primary-btn">New noun</button></article>
-          <article class="card game-card"><span>🧩</span><h3>Sentence Builder</h3><p>German phrase-এর words সঠিক order-এ সাজান।</p><div id="gameSentenceTarget" class="sentence-target"></div><div id="gameSentenceTokens" class="token-bank"></div><div id="gameSentenceBuilt" class="sentence-built"></div><div class="button-row wrap"><button id="gameSentenceCheck" class="primary-btn">Check</button><button id="gameSentenceNew" class="ghost-btn">New sentence</button></div><div id="gameSentenceResult" class="muted"></div></article>
-          <article class="card game-card"><span>⚡</span><h3>Speed Recall</h3><p>বাংলা meaning দেখে 20 seconds-এর মধ্যে German মনে করুন।</p><h4 id="gameSpeedPrompt">Press Start</h4><input id="gameSpeedInput" type="text" autocomplete="off" placeholder="German…" /><div class="game-timer" id="gameSpeedTimer">20</div><div class="button-row wrap"><button id="gameSpeedStart" class="primary-btn">Start</button><button id="gameSpeedCheck" class="ghost-btn">Check</button></div><div id="gameSpeedResult" class="muted"></div></article>
-          <article class="card game-card"><span>⚖️</span><h3>Case Challenge</h3><p>Nominativ / Akkusativ / Dativ / Genitiv pattern practice।</p><p id="gameCasePrompt">Start a case round.</p><div id="gameCaseOptions" class="game-options"></div><div id="gameCaseResult" class="muted"></div><button id="gameCaseNew" class="primary-btn">New case</button></article>
-          <article class="card game-card"><span>🃏</span><h3>Memory Match</h3><p>German ↔ বাংলা pair active recall দিয়ে মিলান।</p><div id="gameMemoryBoard" class="memory-board"></div><div id="gameMemoryResult" class="muted"></div><button id="gameMemoryNew" class="primary-btn">New board</button></article>
+        <div class="game-control card">
+          <div><label><b>Level</b></label><select id="gameLevel"><option value="FOUNDATION">Foundation</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option></select></div>
+          <div class="game-score"><span>Score <b id="gameScore">0</b></span><span>🔥 Streak <b id="gameStreak">0</b></span><span>Best <b id="gameBest">0</b></span><span>Accuracy <b id="gameAccuracy">0%</b></span><button id="gameResetScore" class="ghost-btn">Reset round</button></div>
+        </div>
+        <div class="game-mode-tabs" role="tablist" aria-label="Game modes">
+          <button class="game-mode-tab active" data-game-mode="meaning">🧠 Meaning</button><button class="game-mode-tab" data-game-mode="listen">🎧 Listen</button><button class="game-mode-tab" data-game-mode="spell">✍️ Spell</button><button class="game-mode-tab" data-game-mode="article">🎯 Article</button><button class="game-mode-tab" data-game-mode="sentence">🧩 Sentence</button><button class="game-mode-tab" data-game-mode="speed">⚡ Speed</button><button class="game-mode-tab" data-game-mode="case">⚖️ Case</button><button class="game-mode-tab" data-game-mode="memory">🃏 Memory</button>
+        </div>
+        <div class="game-grid pro-games focused-games">
+          <article class="card game-card active" data-game-panel="meaning"><span>🧠</span><h3>Meaning Sprint</h3><p>German → বাংলা অর্থ দ্রুত চিনুন।</p><p id="gameMeaningPrompt">Start a round.</p><div id="gameMeaningOptions" class="game-options"></div><button id="gameMeaningNew" class="primary-btn">New round</button></article>
+          <article class="card game-card" data-game-panel="listen"><span>🎧</span><h3>Listen & Pick</h3><p>Text না দেখে German শুনে সঠিক অর্থ বাছুন।</p><button id="gameListenPlay" class="primary-btn">🔊 Play word</button><div id="gameListenOptions" class="game-options"></div><div id="gameListenResult" class="muted"></div><button id="gameListenNew" class="ghost-btn">Next</button></article>
+          <article class="card game-card" data-game-panel="spell"><span>✍️</span><h3>Spelling Dictation</h3><p>শব্দ শুনুন, German spelling লিখুন।</p><button id="gameSpellPlay" class="ghost-btn">🔊 Hear word</button><input id="gameSpellInput" type="text" autocomplete="off" placeholder="German word…" /><button id="gameSpellCheck" class="primary-btn">Check</button><div id="gameSpellResult" class="muted"></div><button id="gameSpellNew" class="ghost-btn">Next</button></article>
+          <article class="card game-card" data-game-panel="article"><span>🎯</span><h3>Article Battle</h3><p>Known noun-এর der / die / das নির্বাচন করুন।</p><p id="gameArticlePrompt">Pick der / die / das.</p><div class="game-options"><button data-article="der">der</button><button data-article="die">die</button><button data-article="das">das</button></div><div id="gameArticleResult" class="muted"></div><button id="gameArticleNew" class="primary-btn">New noun</button></article>
+          <article class="card game-card" data-game-panel="sentence"><span>🧩</span><h3>Sentence Builder</h3><p>German phrase-এর words সঠিক order-এ সাজান।</p><div id="gameSentenceTarget" class="sentence-target"></div><div id="gameSentenceTokens" class="token-bank"></div><div id="gameSentenceBuilt" class="sentence-built"></div><div class="button-row wrap"><button id="gameSentenceNew" class="ghost-btn">New sentence</button></div><div id="gameSentenceResult" class="muted"></div></article>
+          <article class="card game-card" data-game-panel="speed"><span>⚡</span><h3>Speed Recall</h3><p>বাংলা meaning দেখে 20 seconds-এর মধ্যে German মনে করুন।</p><h4 id="gameSpeedPrompt">Press Start</h4><input id="gameSpeedInput" type="text" autocomplete="off" placeholder="German…" /><div class="game-timer" id="gameSpeedTimer">20</div><div class="button-row wrap"><button id="gameSpeedStart" class="primary-btn">Start</button><button id="gameSpeedCheck" class="ghost-btn">Check</button></div><div id="gameSpeedResult" class="muted"></div></article>
+          <article class="card game-card" data-game-panel="case"><span>⚖️</span><h3>Case Challenge</h3><p>Nominativ / Akkusativ / Dativ / Genitiv pattern practice।</p><p id="gameCasePrompt">Start a case round.</p><div id="gameCaseOptions" class="game-options"></div><div id="gameCaseResult" class="muted"></div><button id="gameCaseNew" class="primary-btn">New case</button></article>
+          <article class="card game-card" data-game-panel="memory"><span>🃏</span><h3>Memory Match</h3><p>German ↔ বাংলা pair active recall দিয়ে মিলান।</p><div id="gameMemoryBoard" class="memory-board"></div><div id="gameMemoryResult" class="muted"></div><button id="gameMemoryNew" class="primary-btn">New board</button></article>
         </div>
       </section>
 
@@ -294,26 +313,9 @@
         <div id="examCards" class="exam-grid"></div>
       </section>
 
-      <section class="view" id="view-review">
-        <div class="section-heading"><div><span class="section-tag">SPACED REVISION</span><h2>Smart Revision</h2><p>যে word ভুলে যাচ্ছেন সেটা আগে ফিরে আসবে।</p></div></div>
-        <div class="metric-grid"><article><span>Due now</span><strong id="reviewDue">0</strong><small>scheduled items</small></article><article><span>Known</span><strong id="reviewKnown">0</strong><small>vocabulary</small></article><article><span>Weak</span><strong id="reviewWeak">0</strong><small>Again/Hard</small></article><article><span>Drafts</span><strong id="reviewDrafts">0</strong><small>writing saved</small></article></div>
-        <div id="reviewCard" class="card review-card"></div>
-      </section>
-
-
-      <section class="view" id="view-mistakes">
-        <div class="section-heading"><div><span class="section-tag">TARGET THE WEAK SPOTS</span><h2>My Mistakes</h2><p>Again/Hard দেওয়া vocabulary এবং repeatedly difficult items এখানে ফিরে আসবে।</p></div></div>
-        <div id="mistakeList" class="phrase-list"></div>
-      </section>
-
-      <section class="view" id="view-progress">
-        <div class="section-heading"><div><span class="section-tag">YOUR DATA</span><h2>My Progress</h2><p>Progress browser localStorage-এ থাকে; export করলে অন্য device-এ import করা যাবে।</p></div></div>
-        <div id="progressSummary" class="progress-summary"></div>
-        <div class="card"><div class="button-row wrap"><button id="exportBtn" class="primary-btn">Export progress JSON</button><label class="ghost-btn file-label">Import progress<input id="importInput" type="file" accept="application/json" hidden /></label><button id="resetBtn" class="danger-btn">Reset local progress</button></div></div>
-      </section>
-
       <section class="view" id="view-about">
-        <div class="section-heading"><div><span class="section-tag">QUALITY GOVERNANCE</span><h2>How LernDE avoids teaching wrong German</h2><p>সহজ explanation হবে, কিন্তু shortcut কখনো actual grammar rule replace করবে না।</p></div></div>
+        <div class="section-heading"><div><span class="section-tag">ABOUT • PROFILE • QUALITY</span><h2>About LernDE & My Profile</h2><p>নিজের learner name personalize করুন, feedback দিন এবং LernDE কীভাবে content quality protect করে দেখুন।</p></div></div>
+        <div class="card profile-editor"><div><span class="section-tag">SELF LEARNER</span><h3 id="profileNamePreview">Ashraful Islam</h3><p>নাম বদলালে personalized example/model text বদলাবে; lesson IDs, grammar, dictionary, scores বা saved progress বদলাবে না।</p></div><div class="profile-fields"><label for="profileNameInput"><b>Learner name</b></label><input id="profileNameInput" type="text" maxlength="60" autocomplete="name" value="Ashraful Islam" /><div class="button-row wrap"><button id="profileSaveBtn" class="primary-btn">Save name</button><button id="profileResetBtn" class="ghost-btn">Use Ashraful Islam</button></div></div></div>
         <div class="quality-grid">
           <article class="card"><span>1</span><h3>Canonical content</h3><p>Vocabulary/phrase/grammar facts একবার define হয়; সব module একই data reuse করে।</p></article>
           <article class="card"><span>2</span><h3>Pronunciation hierarchy</h3><p>German audio → standard pronunciation → Bangla approximation. Bangla লেখা authoritative pronunciation নয়।</p></article>
@@ -329,6 +331,17 @@
         <div class="card notice-card"><strong>Important:</strong> এই ZIP-এর translator intentionally course-aware and deterministic. Full unrestricted free-text translation requires a server-side translation/AI provider; API key কখনো static frontend-এ hard-code করা উচিত নয়।</div>
       </section>
     </main>
+  </div>
+
+  <div id="installModal" class="modal-backdrop" hidden>
+    <section class="modal card compact-modal" role="dialog" aria-modal="true" aria-labelledby="installModalTitle">
+      <div class="modal-head"><div><span class="section-tag">PWA INSTALL</span><h2 id="installModalTitle">Install LernDE</h2></div><button class="icon-btn" data-close-modal="installModal">✕</button></div>
+      <div class="install-guide">
+        <p><b>Android Chrome:</b> browser menu ⋮ → <b>Install app</b> / <b>Add to Home screen</b>.</p>
+        <p><b>iPhone/iPad Safari:</b> Share → <b>Add to Home Screen</b>.</p>
+        <p class="muted">Browser native install prompt available হলে LernDE সরাসরি সেই prompt দেখাবে।</p>
+      </div>
+    </section>
   </div>
 
   <div id="lessonModal" class="modal-backdrop" hidden>
