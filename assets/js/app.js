@@ -21,7 +21,9 @@
     lastView: 'home',
     selectedLevel: 'FOUNDATION',
     voiceURI: '',
-    voiceRate: 0.9
+    voiceRate: 0.9,
+    game: {score:0,streak:0,best:0,total:0,correct:0},
+    gameMistakes: {}
   });
 
   let state = loadState();
@@ -35,6 +37,12 @@
   let currentMeaningWord = null;
   let currentArticleWord = null;
   let currentListenWord = null;
+  let currentSpellWord = null;
+  let currentSentencePhrase = null;
+  let currentSentenceBuilt = [];
+  let currentSpeedWord = null;
+  let gameSpeedHandle = null;
+  let gameSpeedRemaining = 20;
   let extendedDictionary = null;
   const lessonVocabularyCache = {};
   let dictionaryLoading = null;
@@ -340,19 +348,149 @@
     r.onerror=e=>el.textContent=`Speech recognition error: ${e.error}`;r.start();
   }
 
+  function gameLevel(){
+    return $('#gameLevel')?.value || state.selectedLevel || 'FOUNDATION';
+  }
+  function gamePool(){
+    const level=gameLevel();
+    const list=D.vocabulary.filter(x=>x.level===level);
+    return list.length?list:D.vocabulary;
+  }
+  function gamePhrasePool(){
+    const level=gameLevel();
+    const list=D.phrases.filter(x=>x.level===level && String(x.de||'').trim().split(/\s+/).length>=3);
+    return list.length?list:D.phrases.filter(x=>String(x.de||'').trim().split(/\s+/).length>=3);
+  }
+  function renderGameScore(){
+    state.game=state.game||{score:0,streak:0,best:0,total:0,correct:0};
+    if($('#gameScore'))$('#gameScore').textContent=state.game.score||0;
+    if($('#gameStreak'))$('#gameStreak').textContent=state.game.streak||0;
+    if($('#gameBest'))$('#gameBest').textContent=state.game.best||0;
+  }
+  function recordGameResult(ok,word=null){
+    state.game=state.game||{score:0,streak:0,best:0,total:0,correct:0};
+    state.game.total=(state.game.total||0)+1;
+    if(ok){
+      state.game.correct=(state.game.correct||0)+1;
+      state.game.streak=(state.game.streak||0)+1;
+      state.game.score=(state.game.score||0)+10+Math.min(20,(state.game.streak||0)*2);
+      state.game.best=Math.max(state.game.best||0,state.game.score||0);
+      if(word?.id && D.vocabulary.some(x=>x.id===word.id)){
+        const s=wordState(word.id);
+        setWordState(word.id,{known:s.known,lastRating:s.lastRating||'good',reps:(s.reps||0)+1});
+      }
+    }else{
+      state.game.streak=0;
+      state.game.score=Math.max(0,(state.game.score||0)-3);
+      if(word?.id){
+        state.gameMistakes=state.gameMistakes||{};
+        state.gameMistakes[word.id]={de:word.de,bn:word.bn,en:word.en,level:word.level||gameLevel(),count:(state.gameMistakes[word.id]?.count||0)+1,lastAt:nowIso()};
+        if(D.vocabulary.some(x=>x.id===word.id))scheduleWord(word.id,'hard');
+        else saveState();
+      }else saveState();
+    }
+    saveState();renderGameScore();
+  }
+  function resetGameRound(){
+    if(gameSpeedHandle){clearInterval(gameSpeedHandle);gameSpeedHandle=null;}
+    state.game={score:0,streak:0,best:state.game?.best||0,total:0,correct:0};
+    saveState();renderGameScore();renderGames();
+  }
   function renderGames(){
-    newMeaningGame(); newArticleGame(); newListenGame();
+    renderGameScore();
+    newMeaningGame();newListenGame();newSpellGame();newArticleGame();newSentenceGame();newSpeedGame(false);
   }
   function newMeaningGame(){
-    currentMeaningWord=shuffle(D.vocabulary)[0]; if(!currentMeaningWord)return; const others=shuffle(D.vocabulary.filter(x=>x.id!==currentMeaningWord.id&&x.bn!==currentMeaningWord.bn)).slice(0,3); const opts=shuffle([currentMeaningWord,...others]);
+    const pool=gamePool(); currentMeaningWord=shuffle(pool)[0]; if(!currentMeaningWord)return;
+    const others=shuffle(pool.filter(x=>x.id!==currentMeaningWord.id&&x.bn!==currentMeaningWord.bn)).slice(0,3);
+    const opts=shuffle([currentMeaningWord,...others]);
     $('#gameMeaningPrompt').innerHTML=`${deHtml([currentMeaningWord.article,currentMeaningWord.de].filter(Boolean).join(' '))} মানে কী?`;
     $('#gameMeaningOptions').innerHTML=opts.map(x=>`<button data-meaning-id="${x.id}">${esc(x.bn)}</button>`).join('');
-    $$('#gameMeaningOptions [data-meaning-id]').forEach(b=>b.onclick=()=>{const ok=b.dataset.meaningId===currentMeaningWord.id;b.classList.add(ok?'game-correct':'game-wrong');toast(ok?'Richtig! ✓':'Noch einmal — আবার চেষ্টা করুন।');if(!ok)scheduleWord(currentMeaningWord.id,'hard');});
+    $('#gameMeaningOptions [data-meaning-id]').forEach(b=>b.onclick=()=>{
+      if(b.dataset.locked)return;
+      const ok=b.dataset.meaningId===currentMeaningWord.id;
+      $('#gameMeaningOptions button').forEach(x=>x.dataset.locked='1');
+      b.classList.add(ok?'game-correct':'game-wrong');
+      if(!ok){const right=$(`#gameMeaningOptions [data-meaning-id="${currentMeaningWord.id}"]`);right?.classList.add('game-correct');}
+      recordGameResult(ok,currentMeaningWord);toast(ok?'Richtig! ✓':'Correct answer দেখুন, তারপর আবার recall করুন।');
+    });
+  }
+  function newListenGame(){
+    const pool=gamePool();currentListenWord=shuffle(pool)[0];if(!currentListenWord)return;
+    const others=shuffle(pool.filter(x=>x.id!==currentListenWord.id&&x.bn!==currentListenWord.bn)).slice(0,3);
+    $('#gameListenOptions').innerHTML=shuffle([currentListenWord,...others]).map(x=>`<button data-listen-id="${x.id}">${esc(x.bn)}</button>`).join('');
+    $('#gameListenResult').textContent='প্রথমে text না দেখে audio শুনুন।';
+    $('#gameListenOptions [data-listen-id]').forEach(b=>b.onclick=()=>{
+      if(b.dataset.locked)return;
+      const ok=b.dataset.listenId===currentListenWord.id;
+      $('#gameListenOptions button').forEach(x=>x.dataset.locked='1');
+      b.classList.add(ok?'game-correct':'game-wrong');
+      $('#gameListenResult').innerHTML=ok?'✅ Richtig':`❌ Correct: <b>${esc(currentListenWord.bn)}</b> — ${deHtml(currentListenWord.de)}`;
+      recordGameResult(ok,currentListenWord);
+    });
+  }
+  function newSpellGame(){
+    const pool=gamePool();currentSpellWord=shuffle(pool)[0];if(!currentSpellWord)return;
+    $('#gameSpellInput').value='';$('#gameSpellResult').textContent='Audio শুনে German spelling লিখুন।';
+  }
+  function checkSpellGame(){
+    if(!currentSpellWord)return;
+    const answer=normalizeGerman($('#gameSpellInput').value),target=normalizeGerman(currentSpellWord.de);
+    const ok=answer===target;
+    $('#gameSpellResult').innerHTML=ok?'✅ Richtig':`❌ Correct spelling: <b>${deHtml(currentSpellWord.de)}</b>`;
+    recordGameResult(ok,currentSpellWord);
   }
   function newArticleGame(){
-    currentArticleWord=shuffle(D.vocabulary.filter(x=>['der','die','das'].includes(x.article)))[0]; if(!currentArticleWord)return; $('#gameArticlePrompt').innerHTML=`___ ${deHtml(currentArticleWord.de)}`; $('#gameArticleResult').textContent='';
+    const nouns=gamePool().filter(x=>['der','die','das'].includes(x.article));
+    currentArticleWord=shuffle(nouns.length?nouns:D.vocabulary.filter(x=>['der','die','das'].includes(x.article)))[0];
+    if(!currentArticleWord)return;
+    $('#gameArticlePrompt').innerHTML=`___ ${deHtml(currentArticleWord.de)}`;$('#gameArticleResult').textContent='';
+    $('[data-article]').forEach(x=>{x.classList.remove('game-correct','game-wrong');x.disabled=false;});
   }
-  function newListenGame(){currentListenWord=shuffle(D.vocabulary)[0]; if(!currentListenWord)return; $('#gameListenAnswer').hidden=true;$('#gameListenAnswer').innerHTML=`${currentListenWord.emoji} <b>${deHtml([currentListenWord.article,currentListenWord.de].filter(Boolean).join(' '))}</b><br>${esc(currentListenWord.bn)}`;}
+  function answerArticleGame(article,button){
+    if(!currentArticleWord||button.disabled)return;
+    const ok=article===currentArticleWord.article;
+    $('[data-article]').forEach(x=>x.disabled=true);
+    button.classList.add(ok?'game-correct':'game-wrong');
+    if(!ok){const right=$(`[data-article="${currentArticleWord.article}"]`);right?.classList.add('game-correct');}
+    $('#gameArticleResult').innerHTML=ok?`✅ Richtig: <b>${esc(currentArticleWord.article)} ${esc(currentArticleWord.de)}</b>`:`❌ Correct: <b>${esc(currentArticleWord.article)} ${esc(currentArticleWord.de)}</b>`;
+    recordGameResult(ok,currentArticleWord);
+  }
+  function newSentenceGame(){
+    const pool=gamePhrasePool();currentSentencePhrase=shuffle(pool)[0];currentSentenceBuilt=[];if(!currentSentencePhrase)return;
+    const tokens=String(currentSentencePhrase.de).trim().split(/\s+/);
+    $('#gameSentenceTarget').textContent=currentSentencePhrase.bn||currentSentencePhrase.en||'Build the German sentence';
+    $('#gameSentenceTokens').innerHTML=shuffle(tokens.map((text,i)=>({text,key:i+'-'+text}))).map(x=>`<button class="sentence-token" data-token="${esc(x.text)}">${esc(x.text)}</button>`).join('');
+    $('#gameSentenceBuilt').innerHTML='';$('#gameSentenceResult').textContent='শব্দগুলো tap করে sentence বানান।';
+    $('#gameSentenceTokens [data-token]').forEach(b=>b.onclick=()=>{
+      if(b.disabled)return;b.disabled=true;currentSentenceBuilt.push(b.dataset.token);
+      const chip=document.createElement('button');chip.type='button';chip.className='sentence-token built';chip.textContent=b.dataset.token;
+      chip.onclick=()=>{const idx=currentSentenceBuilt.lastIndexOf(b.dataset.token);if(idx>=0)currentSentenceBuilt.splice(idx,1);chip.remove();b.disabled=false;};
+      $('#gameSentenceBuilt').appendChild(chip);
+    });
+  }
+  function checkSentenceGame(){
+    if(!currentSentencePhrase)return;
+    const built=normalizeGerman(currentSentenceBuilt.join(' ')),target=normalizeGerman(currentSentencePhrase.de);
+    const ok=built===target;
+    $('#gameSentenceResult').innerHTML=ok?'✅ Richtig':`❌ Correct: <b>${deHtml(currentSentencePhrase.de)}</b>`;
+    recordGameResult(ok,null);
+  }
+  function newSpeedGame(start=true){
+    if(gameSpeedHandle){clearInterval(gameSpeedHandle);gameSpeedHandle=null;}
+    const pool=gamePool();currentSpeedWord=shuffle(pool)[0];if(!currentSpeedWord)return;
+    $('#gameSpeedPrompt').textContent=currentSpeedWord.bn;$('#gameSpeedInput').value='';$('#gameSpeedResult').textContent='';
+    gameSpeedRemaining=20;$('#gameSpeedTimer').textContent=gameSpeedRemaining;
+    if(!start)return;
+    gameSpeedHandle=setInterval(()=>{gameSpeedRemaining--;$('#gameSpeedTimer').textContent=gameSpeedRemaining;if(gameSpeedRemaining<=0){clearInterval(gameSpeedHandle);gameSpeedHandle=null;$('#gameSpeedResult').innerHTML=`⏱ Time. Correct: <b>${deHtml(currentSpeedWord.de)}</b>`;recordGameResult(false,currentSpeedWord);}},1000);
+  }
+  function checkSpeedGame(){
+    if(!currentSpeedWord)return;
+    if(gameSpeedHandle){clearInterval(gameSpeedHandle);gameSpeedHandle=null;}
+    const ok=normalizeGerman($('#gameSpeedInput').value)===normalizeGerman(currentSpeedWord.de);
+    $('#gameSpeedResult').innerHTML=ok?'✅ Richtig':`❌ Correct: <b>${deHtml(currentSpeedWord.de)}</b>`;
+    recordGameResult(ok,currentSpeedWord);
+  }
 
   function renderGermanyLife(){
     $('#germanyLifeList').innerHTML=(D.germanyLifeTopics||[]).map((x,i)=>`<article class="card germany-card"><span class="germany-icon">${x.icon}</span><span class="section-tag">${x.level}</span><h3>${esc(x.title)}</h3><p>${deHtml(x.de)}</p><p>${esc(x.bn)}</p><div class="memory-box"><small>${esc(x.note)}</small></div><button class="ghost-btn" data-germany-say="${i}">🔊 Listen</button></article>`).join('');
@@ -485,7 +623,16 @@
     $('#phraseLevel').onchange=renderPhrases; $('#phraseSearch').oninput=renderPhrases; $('#grammarLevel').onchange=renderGrammar;
     $('#voiceSelect').onchange=e=>{state.voiceURI=e.target.value;saveState();renderPronunciation();speak('Guten Tag. Willkommen bei LernDE.',.9);}; $('#voiceRate').onchange=e=>{state.voiceRate=Number(e.target.value);saveState();}; $('#voiceCalibrationBtn').onclick=()=>speak('Guten Tag. Ich lerne Deutsch. Heute übe ich Aussprache, Rhythmus und Satzmelodie.',state.voiceRate);
     $('#shadowLevel').onchange=chooseShadow; $('#newShadowBtn').onclick=chooseShadow; $('#shadowSlowBtn').onclick=()=>currentShadow&&speak(currentShadow.text,.68); $('#shadowNaturalBtn').onclick=()=>currentShadow&&speak(currentShadow.text,Math.max(.88,state.voiceRate||.9)); $('#shadowRecordBtn').onclick=()=>currentShadow&&startRecognition(currentShadow.text,'#shadowResult');
-    $('#gameMeaningNew').onclick=newMeaningGame; $('#gameArticleNew').onclick=newArticleGame; $$('[data-article]').forEach(b=>b.onclick=()=>{if(!currentArticleWord)return;const ok=b.dataset.article===currentArticleWord.article;$('#gameArticleResult').innerHTML=ok?`✅ Richtig: <b>${esc(currentArticleWord.article)} ${esc(currentArticleWord.de)}</b>`:`❌ ${esc(b.dataset.article)} নয়। Correct: <b>${esc(currentArticleWord.article)} ${esc(currentArticleWord.de)}</b>`;if(!ok)scheduleWord(currentArticleWord.id,'hard');}); $('#gameListenPlay').onclick=()=>currentListenWord&&speak(currentListenWord.de,.76); $('#gameListenReveal').onclick=()=>$('#gameListenAnswer').hidden=false; $('#gameListenNew').onclick=newListenGame;
+    $('#gameLevel').onchange=()=>{state.selectedLevel=$('#gameLevel').value;saveState();renderGames();};
+    $('#gameResetScore').onclick=resetGameRound;
+    $('#gameMeaningNew').onclick=newMeaningGame;
+    $('#gameListenPlay').onclick=()=>currentListenWord&&speak(currentListenWord.de,.76);
+    $('#gameListenNew').onclick=newListenGame;
+    $('#gameSpellPlay').onclick=()=>currentSpellWord&&speak(currentSpellWord.de,.72);
+    $('#gameSpellCheck').onclick=checkSpellGame;$('#gameSpellNew').onclick=newSpellGame;
+    $('#gameArticleNew').onclick=newArticleGame;$('[data-article]').forEach(b=>b.onclick=()=>answerArticleGame(b.dataset.article,b));
+    $('#gameSentenceCheck').onclick=checkSentenceGame;$('#gameSentenceNew').onclick=newSentenceGame;
+    $('#gameSpeedStart').onclick=()=>newSpeedGame(true);$('#gameSpeedCheck').onclick=checkSpeedGame;
     $('#recallNewBtn').onclick=newRecall; $('#recallRevealBtn').onclick=()=>{$('#recallAnswer').hidden=false;if(currentRecall)speak(currentRecall.de);};
     $('#translateBtn').onclick=translate; $('#correctorBtn').onclick=correctGerman; $('#swapTranslateBtn').onclick=()=>{const m=$('#translationMode');const map={'bn-de':'de-bn','de-bn':'bn-de','en-de':'de-en','de-en':'en-de'};m.value=map[m.value];};
     $('#exportBtn').onclick=exportProgress; $('#importInput').onchange=e=>{if(e.target.files[0])importProgress(e.target.files[0]);e.target.value='';}; $('#resetBtn').onclick=resetProgress;
@@ -498,7 +645,7 @@
 
   async function init(){
     if(window.LernDEReady) await window.LernDEReady;
-    bind(); ensureLevelOptions('#vocabLevel'); ensureLevelOptions('#phraseLevel'); ensureLevelOptions('#grammarLevel'); renderAll();
+    bind(); ensureLevelOptions('#vocabLevel'); ensureLevelOptions('#phraseLevel'); ensureLevelOptions('#grammarLevel'); if($('#gameLevel'))$('#gameLevel').value=state.selectedLevel||'FOUNDATION'; renderAll();
     const start = $(`#view-${state.lastView}`) ? state.lastView : 'home'; showView(start);
     if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
     speechSynthesis?.getVoices?.(); if('speechSynthesis' in window) speechSynthesis.onvoiceschanged=()=>{ if($('#view-pronunciation')?.classList.contains('active')) renderPronunciation(); };
