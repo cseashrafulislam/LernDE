@@ -55,3 +55,28 @@
 .dialogue-box{padding:14px;border-left:4px solid #111827;background:var(--soft,#f6f7fb);border-radius:8px;margin-bottom:10px}.dialogue-box p{margin:6px 0}
 .task-list{padding-left:22px}.task-list li{margin:8px 0}
 @media(max-width:760px){.alphabet-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.lesson-word-grid{grid-template-columns:1fr;max-height:none}.lesson-block-head{flex-direction:column}}
+
+
+/* Pro learning games */
+.game-control{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.game-control label{display:block;margin-bottom:6px}
+.game-control select{min-width:190px}
+.game-score{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.game-score span{padding:8px 11px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2)}
+.pro-games .game-card{display:flex;flex-direction:column;gap:10px}
+.pro-games .game-card input{width:100%}
+.game-timer{font-size:30px;font-weight:800;line-height:1;text-align:center;padding:10px;border-radius:12px;background:var(--surface-2)}
+.sentence-target{min-height:42px;padding:10px 12px;border-radius:10px;background:var(--surface-2);font-weight:700}
+.token-bank,.sentence-built{display:flex;gap:8px;flex-wrap:wrap;min-height:48px;padding:10px;border:1px dashed var(--border);border-radius:12px}
+.sentence-built{background:var(--surface-2)}
+.sentence-token{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:8px 10px;cursor:pointer;font-weight:650}
+.sentence-token:disabled{opacity:.35;cursor:not-allowed}
+.sentence-token.built{opacity:1;background:var(--surface)}
+.game-options button.game-correct,[data-article].game-correct{outline:2px solid currentColor;font-weight:800}
+.game-options button.game-wrong,[data-article].game-wrong{opacity:.65}
+@media(max-width:680px){
+  .game-control{align-items:stretch}
+  .game-control>div{width:100%}
+  .game-control select{width:100%;min-width:0}
+  .game-score{justify-content:space-between}
+}
