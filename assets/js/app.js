@@ -189,7 +189,7 @@
     window.LernDEGerman?.decorate?.($('#lessonModalBody'));
     $('#completeLessonBtn').onclick=()=>{
       const done=state.completedLessons.includes(id);
-      state.completedLessons=done?state.completdLessons.filter(x=>x!==id):[...state.completedLessons,id];
+      state.completedLessons=done?state.completedLessons.filter(x=>x!==id):[...state.completedLessons,id];
       if(!done)logActivity('lesson','Completed '+id+' '+l.title);
       saveState();renderCourse();closeModal('lessonModal');toast(done?'Marked incomplete':'Lesson completed! 🎉');
     };
@@ -475,7 +475,8 @@
 
   function bind(){
     $$('.nav-item').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
-    $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.jump)));
+    $('[data-jump]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.jump)));
+    $('[data-open-lesson]').forEach(b=>b.addEventListener('click',()=>{state.selectedLevel='FOUNDATION';saveState();closeSidebar();openLesson(b.dataset.openLesson);}));
     $('#menuBtn').onclick=openSidebar; $('#closeMenuBtn').onclick=closeSidebar; $('#sidebarBackdrop').onclick=closeSidebar;
     $$('[data-close-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeModal));
     $$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
