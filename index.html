@@ -133,22 +133,30 @@
       </section>
 
       <section class="view" id="view-dictionary">
-        <div class="section-heading"><div><span class="section-tag">17,000 SOURCE-BACKED TERMS</span><h2>German Dictionary</h2><p>German শব্দ search করুন। বাংলা ও English support meaning দেখুন, German pronunciation শুনুন। এই bank reference/search-এর জন্য; lesson-এর “New Words” আলাদা pedagogically validated list।</p></div><div class="section-stat"><strong id="dictTotal">17,000</strong><span>unique entries</span></div></div>
+        <div class="section-heading"><div><span class="section-tag">17,000 SOURCE-BACKED TERMS</span><h2>German Dictionary</h2><p>প্রতি page-এ 15/20 word। Read ✓ করলে word টি Read list-এ যাবে; Unread/Read/All থেকে পরে আবার দেখা যাবে। Search, browse filter, category, sort ও German audio একসাথে কাজ করবে।</p></div><div class="section-stat"><strong id="dictTotal">17,000</strong><span>unique entries</span></div></div>
+        <div class="card dictionary-progress-card">
+          <div class="dictionary-progress-main">
+            <div><span class="section-tag">STUDY QUEUE</span><h3><span id="dictReadCount">0</span> read • <span id="dictUnreadCount">17,000</span> unread</h3></div>
+            <div class="dictionary-status-tabs" role="tablist" aria-label="Dictionary read status">
+              <button type="button" class="active" data-dict-status="UNREAD">Unread</button>
+              <button type="button" data-dict-status="READ">Read</button>
+              <button type="button" data-dict-status="ALL">All</button>
+            </div>
+          </div>
+          <p class="muted">Read status এই device-এর local progress-এ save থাকে। ভুল করে Read করলে আবার Unread করা যাবে।</p>
+        </div>
         <div class="toolbar card dictionary-toolbar">
           <input id="dictSearch" type="search" autocomplete="off" placeholder="German / বাংলা / English search…" />
-          <select id="dictLanguage"><option value="ALL">All fields</option><option value="DE">German</option><option value="BN">বাংলা</option><option value="EN">English</option></select>
-          <select id="dictReadFilter"><option value="UNREAD">Unread</option><option value="READ">Read</option><option value="ALL">All</option></select>
-          <select id="dictPageSize"><option value="20">20 / page</option><option value="15">15 / page</option></select>
-          <button id="dictClearBtn" class="ghost-btn">Clear</button>
+          <select id="dictLanguage" aria-label="Search field"><option value="ALL">All fields</option><option value="DE">German</option><option value="BN">বাংলা</option><option value="EN">English</option></select>
+          <select id="dictEntryClass" aria-label="Entry class"><option value="ALL">All entry classes</option><option value="TERM">Learning terms</option><option value="REFERENCE">Reference entries</option><option value="CODE">Code / symbol entries</option></select>
+          <select id="dictCategory" aria-label="Browse category"><option value="ALL">All categories</option><option value="GENERAL">General</option><option value="WORK_TECH">Work & Technology</option><option value="HEALTH">Health</option><option value="SCIENCE">Science</option><option value="PLACE_NAME">Places & Names</option></select>
+          <select id="dictSort" aria-label="Sort"><option value="LEARNING">Learning first</option><option value="AZ">German A–Z</option><option value="ZA">German Z–A</option></select>
+          <select id="dictPageSize" aria-label="Words per page"><option value="15">15 / page</option><option value="20">20 / page</option></select>
+          <button id="dictClearBtn" class="ghost-btn">Reset filters</button>
         </div>
-        <div class="card dictionary-status"><b>Study progress:</b> <span id="dictReadCount">0</span> read • <span id="dictUnreadCount">17,000</span> unread</div>
         <div id="dictStatus" class="card dictionary-status">Dictionary first load-এ 4টি data chunk lazy-load হবে। Default list = Unread.</div>
         <div id="dictResults" class="dictionary-results"></div>
-        <div class="card dictionary-pager">
-          <button id="dictPrevBtn" class="ghost-btn">← Previous</button>
-          <span id="dictPageInfo">Page 1 / 1</span>
-          <button id="dictNextBtn" class="ghost-btn">Next →</button>
-        </div>
+        <nav id="dictPager" class="dictionary-pager" aria-label="Dictionary pagination"></nav>
       </section>
 
       <section class="view" id="view-phrases">
@@ -158,10 +166,15 @@
       </section>
 
       <section class="view" id="view-grammar">
-        <div class="section-heading"><div><span class="section-tag">SIMPLE BUT CORRECT</span><h2>Grammar Lab</h2><p>Mnemonic মনে রাখতে সাহায্য করবে; actual rule-টাই source of truth।</p></div></div>
-        <div class="split-layout">
-          <aside class="card list-panel"><select id="grammarLevel"><option value="ALL">All levels</option></select><div id="grammarList"></div></aside>
-          <article id="grammarDetail" class="card detail-panel"></article>
+        <div class="section-heading"><div><span class="section-tag">SIMPLE BUT CORRECT</span><h2>Grammar Lab</h2><p>Rule → example → memory tip → common mistake → self-test। Search বা level filter দিয়ে দ্রুত rule খুঁজুন।</p></div></div>
+        <div class="split-layout grammar-layout">
+          <aside class="card list-panel grammar-list-panel">
+            <input id="grammarSearch" type="search" autocomplete="off" placeholder="Search grammar rule…" />
+            <select id="grammarLevel"><option value="ALL">All levels</option></select>
+            <div class="grammar-list-meta"><strong id="grammarCount">0 rules</strong><small>Select a rule to open details</small></div>
+            <div id="grammarList"></div>
+          </aside>
+          <article id="grammarDetail" class="card detail-panel grammar-detail-panel"></article>
         </div>
       </section>
 
