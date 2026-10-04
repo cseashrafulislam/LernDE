@@ -46,6 +46,9 @@
   let extendedDictionary = null;
   const lessonVocabularyCache = {};
   let dictionaryLoading = null;
+  let currentGamePool = [];
+  let currentCaseQuestion = null;
+  let memoryGameState = null;
 
   function loadState(){
     try{
@@ -126,7 +129,13 @@
 
   async function loadLessonVocabulary(level){
     if(lessonVocabularyCache[level]) return lessonVocabularyCache[level];
-    const paths={FOUNDATION:'assets/data/lesson-vocabulary-foundation.json'};
+    const paths={
+      FOUNDATION:'assets/data/lesson-vocabulary-foundation.json',
+      A1:'assets/data/lesson-vocabulary-a1.json',
+      A2:'assets/data/lesson-vocabulary-a2.json',
+      B1:'assets/data/lesson-vocabulary-b1.json',
+      B2:'assets/data/lesson-vocabulary-b2.json'
+    };
     const path=paths[level]; if(!path) return null;
     const res=await fetch(path,{cache:'force-cache'}); if(!res.ok) throw new Error('Vocabulary pack '+level+': HTTP '+res.status);
     const data=await res.json(); lessonVocabularyCache[level]=data; return data;
@@ -184,13 +193,19 @@
       const levelV=D.vocabulary.filter(x=>x.level===l.level), levelP=D.phrases.filter(x=>x.level===l.level), levelG=D.grammar.filter(x=>x.level===l.level);
       const take=(arr,count,seed)=>Array.from({length:Math.min(count,arr.length)},(_,i)=>arr[(seed+i)%arr.length]);
       const sameV=take(levelV,8,(l.order-1)*8), sameP=take(levelP,4,(l.order-1)*4), sameG=take(levelG,2,(l.order-1)*2);
+      const expansionHtml=lessonWords.length
+        ? '<div class="lesson-content-block"><div class="lesson-block-head"><div><h3>📚 50 New Words — Unique Vocabulary Expansion</h3><p class="muted">এই 50 lemma অন্য lesson-এ New Word হিসেবে repeat হয় না। Core lesson topic/grammar নিচের curated content; এই block vocabulary breadth বাড়ায়।</p></div><span class="section-tag">'+lessonWords.length+' NEW</span></div><div class="lesson-word-grid">'
+          +lessonWords.map((w,i)=>'<article class="lesson-word"><span class="word-no">'+(i+1)+'</span><div><b data-german-text>'+esc(w.de)+'</b><p>'+esc(w.bn)+'</p><small>'+esc(String(w.en||'').length>100?String(w.en).slice(0,97)+'…':w.en||'')+'</small></div><button class="icon-btn speak-btn" data-say="'+esc(w.de)+'">🔊</button></article>').join('')
+          +'</div></div>'
+        : '<div class="mistake-box">Lesson vocabulary pack unavailable.</div>';
       $('#lessonModalBody').innerHTML=
         '<p class="muted">'+esc(l.description)+'</p>'
         +'<div class="lesson-content-block"><h3>🎯 Goal</h3><p>'+esc(D.levels.find(x=>x.id===l.level)?.goal||'Practice German step by step.')+'</p></div>'
-        +'<div class="lesson-content-block"><h3>📚 Current curated lesson set</h3><div class="vocab-grid">'+sameV.map(w=>miniVocab(w)).join('')+'</div></div>'
+        +'<div class="lesson-content-block"><h3>📚 Core lesson vocabulary</h3><div class="vocab-grid">'+sameV.map(w=>miniVocab(w)).join('')+'</div></div>'
+        +expansionHtml
         +'<div class="lesson-content-block"><h3>🧩 Grammar</h3>'+sameG.map(g=>'<div class="memory-box"><b>'+esc(g.title)+'</b><p>'+esc(g.rule)+'</p><small>'+esc(g.memory)+'</small></div>').join('')+'</div>'
         +'<div class="lesson-content-block"><h3>💬 Useful patterns</h3>'+sameP.map(p=>'<div class="lesson-content-block"><b data-german-text>'+esc(p.de)+'</b><p>'+esc(p.bn)+'</p><button class="ghost-btn speak-btn" data-say="'+esc(p.de)+'">🔊</button></div>').join('')+'</div>'
-        +'<div class="notice-card">A1–B2 lesson-specific large word packs are loaded only after content validation. Extended 17K dictionary is available separately and is not silently counted as lesson mastery.</div>'
+        +'<div class="memory-box"><b>Vocabulary standard</b><p>Core CEFR lesson content এবং 50-word expansion আলাদা রাখা হয়েছে। Expansion bank real/source-backed reference vocabulary; exam mastery শুধু word count দিয়ে নির্ধারিত হয় না।</p></div>'
         +'<button class="primary-btn block" id="completeLessonBtn">'+(state.completedLessons.includes(id)?'✓ Completed — tap to mark incomplete':'Complete lesson ✓')+'</button>';
     }
     $$('#lessonModal .speak-btn').forEach(b=>b.onclick=()=>speak(b.dataset.say));
@@ -266,7 +281,7 @@
       <div class="dictionary-main"><div><span class="vocab-level">${x.referenceOnly?'REFERENCE':'TERM'}</span><h3 data-german-text>${esc(x.de)}</h3></div><button class="icon-btn dict-say" data-say="${esc(x.de)}">🔊</button></div>
       <p><b>বাংলা:</b> ${esc(x.bn)}</p><p class="muted"><b>English:</b> ${esc(x.en||'—')}</p>
     </article>`).join(''):'<div class="card empty-state">কোনো matching entry পাওয়া যায়নি।</div>';
-    $('#dictResults .dict-say').forEach(b=>b.onclick=()=>speak(b.dataset.say,.88));
+    $$('#dictResults .dict-say').forEach(b=>b.onclick=()=>speak(b.dataset.say,.88));
     window.LernDEGerman?.decorate?.(results);
   }
 
@@ -352,6 +367,7 @@
     return $('#gameLevel')?.value || state.selectedLevel || 'FOUNDATION';
   }
   function gamePool(){
+    if(currentGamePool.length) return currentGamePool;
     const level=gameLevel();
     const list=D.vocabulary.filter(x=>x.level===level);
     return list.length?list:D.vocabulary;
@@ -396,9 +412,14 @@
     state.game={score:0,streak:0,best:state.game?.best||0,total:0,correct:0};
     saveState();renderGameScore();renderGames();
   }
-  function renderGames(){
+  async function renderGames(){
     renderGameScore();
-    newMeaningGame();newListenGame();newSpellGame();newArticleGame();newSentenceGame();newSpeedGame(false);
+    const level=gameLevel();
+    try{
+      const pack=await loadLessonVocabulary(level);
+      currentGamePool=pack?.lessons?Object.values(pack.lessons).flat().map(w=>({...w,level})):[];
+    }catch(e){console.error('[LernDE game pool]',e);currentGamePool=[];}
+    newMeaningGame();newListenGame();newSpellGame();newArticleGame();newSentenceGame();newSpeedGame(false);newCaseGame();newMemoryGame();
   }
   function newMeaningGame(){
     const pool=gamePool(); currentMeaningWord=shuffle(pool)[0]; if(!currentMeaningWord)return;
@@ -406,10 +427,10 @@
     const opts=shuffle([currentMeaningWord,...others]);
     $('#gameMeaningPrompt').innerHTML=`${deHtml([currentMeaningWord.article,currentMeaningWord.de].filter(Boolean).join(' '))} মানে কী?`;
     $('#gameMeaningOptions').innerHTML=opts.map(x=>`<button data-meaning-id="${x.id}">${esc(x.bn)}</button>`).join('');
-    $('#gameMeaningOptions [data-meaning-id]').forEach(b=>b.onclick=()=>{
+    $$('#gameMeaningOptions [data-meaning-id]').forEach(b=>b.onclick=()=>{
       if(b.dataset.locked)return;
       const ok=b.dataset.meaningId===currentMeaningWord.id;
-      $('#gameMeaningOptions button').forEach(x=>x.dataset.locked='1');
+      $$('#gameMeaningOptions button').forEach(x=>x.dataset.locked='1');
       b.classList.add(ok?'game-correct':'game-wrong');
       if(!ok){const right=$(`#gameMeaningOptions [data-meaning-id="${currentMeaningWord.id}"]`);right?.classList.add('game-correct');}
       recordGameResult(ok,currentMeaningWord);toast(ok?'Richtig! ✓':'Correct answer দেখুন, তারপর আবার recall করুন।');
@@ -420,10 +441,10 @@
     const others=shuffle(pool.filter(x=>x.id!==currentListenWord.id&&x.bn!==currentListenWord.bn)).slice(0,3);
     $('#gameListenOptions').innerHTML=shuffle([currentListenWord,...others]).map(x=>`<button data-listen-id="${x.id}">${esc(x.bn)}</button>`).join('');
     $('#gameListenResult').textContent='প্রথমে text না দেখে audio শুনুন।';
-    $('#gameListenOptions [data-listen-id]').forEach(b=>b.onclick=()=>{
+    $$('#gameListenOptions [data-listen-id]').forEach(b=>b.onclick=()=>{
       if(b.dataset.locked)return;
       const ok=b.dataset.listenId===currentListenWord.id;
-      $('#gameListenOptions button').forEach(x=>x.dataset.locked='1');
+      $$('#gameListenOptions button').forEach(x=>x.dataset.locked='1');
       b.classList.add(ok?'game-correct':'game-wrong');
       $('#gameListenResult').innerHTML=ok?'✅ Richtig':`❌ Correct: <b>${esc(currentListenWord.bn)}</b> — ${deHtml(currentListenWord.de)}`;
       recordGameResult(ok,currentListenWord);
@@ -445,12 +466,12 @@
     currentArticleWord=shuffle(nouns.length?nouns:D.vocabulary.filter(x=>['der','die','das'].includes(x.article)))[0];
     if(!currentArticleWord)return;
     $('#gameArticlePrompt').innerHTML=`___ ${deHtml(currentArticleWord.de)}`;$('#gameArticleResult').textContent='';
-    $('[data-article]').forEach(x=>{x.classList.remove('game-correct','game-wrong');x.disabled=false;});
+    $$('[data-article]').forEach(x=>{x.classList.remove('game-correct','game-wrong');x.disabled=false;});
   }
   function answerArticleGame(article,button){
     if(!currentArticleWord||button.disabled)return;
     const ok=article===currentArticleWord.article;
-    $('[data-article]').forEach(x=>x.disabled=true);
+    $$('[data-article]').forEach(x=>x.disabled=true);
     button.classList.add(ok?'game-correct':'game-wrong');
     if(!ok){const right=$(`[data-article="${currentArticleWord.article}"]`);right?.classList.add('game-correct');}
     $('#gameArticleResult').innerHTML=ok?`✅ Richtig: <b>${esc(currentArticleWord.article)} ${esc(currentArticleWord.de)}</b>`:`❌ Correct: <b>${esc(currentArticleWord.article)} ${esc(currentArticleWord.de)}</b>`;
@@ -462,7 +483,7 @@
     $('#gameSentenceTarget').textContent=currentSentencePhrase.bn||currentSentencePhrase.en||'Build the German sentence';
     $('#gameSentenceTokens').innerHTML=shuffle(tokens.map((text,i)=>({text,key:i+'-'+text}))).map(x=>`<button class="sentence-token" data-token="${esc(x.text)}">${esc(x.text)}</button>`).join('');
     $('#gameSentenceBuilt').innerHTML='';$('#gameSentenceResult').textContent='শব্দগুলো tap করে sentence বানান।';
-    $('#gameSentenceTokens [data-token]').forEach(b=>b.onclick=()=>{
+    $$('#gameSentenceTokens [data-token]').forEach(b=>b.onclick=()=>{
       if(b.disabled)return;b.disabled=true;currentSentenceBuilt.push(b.dataset.token);
       const chip=document.createElement('button');chip.type='button';chip.className='sentence-token built';chip.textContent=b.dataset.token;
       chip.onclick=()=>{const idx=currentSentenceBuilt.lastIndexOf(b.dataset.token);if(idx>=0)currentSentenceBuilt.splice(idx,1);chip.remove();b.disabled=false;};
@@ -492,14 +513,64 @@
     recordGameResult(ok,currentSpeedWord);
   }
 
+  const CASE_BANK=[
+    {level:'FOUNDATION',q:'___ Buch ist neu.',options:['Der','Die','Das'],answer:'Das',note:'Buch is neuter: das Buch.'},
+    {level:'FOUNDATION',q:'___ Frau lernt Deutsch.',options:['Der','Die','Das'],answer:'Die',note:'Frau is feminine: die Frau.'},
+    {level:'A1',q:'Ich sehe ___ Mann.',options:['der','den','dem'],answer:'den',note:'Direct object → Akkusativ; masculine der → den.'},
+    {level:'A1',q:'Ich kaufe ___ Jacke.',options:['eine','einen','einem'],answer:'eine',note:'Jacke is feminine; Akkusativ keeps eine.'},
+    {level:'A1',q:'Wir haben ___ Auto.',options:['ein','einen','einem'],answer:'ein',note:'Auto is neuter; Akkusativ keeps ein.'},
+    {level:'A2',q:'Ich fahre mit ___ Bus.',options:['der','den','dem'],answer:'dem',note:'mit always takes Dativ: dem Bus.'},
+    {level:'A2',q:'Ich spreche mit ___ Kollegin.',options:['die','der','den'],answer:'der',note:'mit + Dativ; feminine die → der.'},
+    {level:'A2',q:'Das Buch liegt auf ___ Tisch.',options:['der','den','dem'],answer:'dem',note:'Location (wo?) with two-way preposition → Dativ.'},
+    {level:'B1',q:'Das ist der Kollege, mit ___ ich arbeite.',options:['der','dem','den'],answer:'dem',note:'mit requires Dativ; relative pronoun masculine = dem.'},
+    {level:'B1',q:'Wegen ___ Problems wurde der Termin verschoben.',options:['das','des','dem'],answer:'des',note:'Formal wegen commonly takes Genitiv: des Problems.'},
+    {level:'B1',q:'Ich interessiere mich für ___ Stelle.',options:['die','der','dem'],answer:'die',note:'für takes Akkusativ; feminine stays die.'},
+    {level:'B2',q:'Das ist das Thema, über ___ wir gesprochen haben.',options:['das','dem','dessen'],answer:'das',note:'über + sprechen uses Akkusativ; neuter relative pronoun = das.'},
+    {level:'B2',q:'Der Kollege, ___ Laptop kaputt ist, arbeitet zu Hause.',options:['dessen','deren','dem'],answer:'dessen',note:'dessen = whose for masculine/neuter antecedent.'},
+    {level:'B2',q:'Die Kundin, mit ___ wir verhandeln, kommt morgen.',options:['die','der','deren'],answer:'der',note:'mit + Dativ; feminine relative pronoun = der.'}
+  ];
+  function newCaseGame(){
+    const level=gameLevel(),pool=CASE_BANK.filter(x=>x.level===level);currentCaseQuestion=shuffle(pool.length?pool:CASE_BANK)[0];if(!currentCaseQuestion)return;
+    $('#gameCasePrompt').textContent=currentCaseQuestion.q;$('#gameCaseResult').textContent='Case rule চিনে answer দিন।';
+    $('#gameCaseOptions').innerHTML=shuffle(currentCaseQuestion.options).map(x=>'<button data-case-answer="'+esc(x)+'">'+esc(x)+'</button>').join('');
+    $$('#gameCaseOptions [data-case-answer]').forEach(b=>b.onclick=()=>{
+      if(b.dataset.locked)return;const ok=b.dataset.caseAnswer===currentCaseQuestion.answer;$$('#gameCaseOptions button').forEach(x=>x.dataset.locked='1');b.classList.add(ok?'game-correct':'game-wrong');
+      if(!ok){const right=[...$('#gameCaseOptions').querySelectorAll('button')].find(x=>x.dataset.caseAnswer===currentCaseQuestion.answer);right?.classList.add('game-correct');}
+      $('#gameCaseResult').innerHTML=(ok?'✅ Richtig. ':'❌ Correct: <b>'+esc(currentCaseQuestion.answer)+'</b>. ')+esc(currentCaseQuestion.note);recordGameResult(ok,null);
+    });
+  }
+  function newMemoryGame(){
+    const source=shuffle(gamePool()).filter((w,i,a)=>w?.de&&w?.bn&&a.findIndex(x=>x.de===w.de)===i).slice(0,6);
+    if(source.length<3){$('#gameMemoryBoard').innerHTML='<div class="empty-state">Not enough words.</div>';return;}
+    const cards=shuffle(source.flatMap(w=>[{pair:w.id,side:'de',label:w.de,word:w},{pair:w.id,side:'bn',label:w.bn,word:w}]));
+    memoryGameState={cards,open:[],matched:new Set(),lock:false};$('#gameMemoryResult').textContent='German ↔ বাংলা pair মিলান।';
+    $('#gameMemoryBoard').innerHTML=cards.map((c,i)=>'<button class="memory-card" data-memory-index="'+i+'">?</button>').join('');
+    $$('#gameMemoryBoard [data-memory-index]').forEach(b=>b.onclick=()=>flipMemoryCard(+b.dataset.memoryIndex,b));
+  }
+  function flipMemoryCard(index,button){
+    const s=memoryGameState;if(!s||s.lock||s.matched.has(index)||s.open.some(x=>x.index===index))return;
+    const card=s.cards[index];button.textContent=card.label;button.classList.add('open');s.open.push({index,button,card});if(s.open.length<2)return;
+    const [a,b]=s.open;s.lock=true;
+    if(a.card.pair===b.card.pair&&a.card.side!==b.card.side){
+      a.button.classList.add('game-correct');b.button.classList.add('game-correct');s.matched.add(a.index);s.matched.add(b.index);s.open=[];s.lock=false;recordGameResult(true,a.card.word);
+      if(s.matched.size===s.cards.length)$('#gameMemoryResult').textContent='✅ Round complete — সব pair matched.';
+    }else{
+      a.button.classList.add('game-wrong');b.button.classList.add('game-wrong');recordGameResult(false,a.card.word);
+      setTimeout(()=>{a.button.textContent='?';b.button.textContent='?';a.button.classList.remove('open','game-wrong');b.button.classList.remove('open','game-wrong');s.open=[];s.lock=false;},650);
+    }
+  }
+
   function renderGermanyLife(){
     $('#germanyLifeList').innerHTML=(D.germanyLifeTopics||[]).map((x,i)=>`<article class="card germany-card"><span class="germany-icon">${x.icon}</span><span class="section-tag">${x.level}</span><h3>${esc(x.title)}</h3><p>${deHtml(x.de)}</p><p>${esc(x.bn)}</p><div class="memory-box"><small>${esc(x.note)}</small></div><button class="ghost-btn" data-germany-say="${i}">🔊 Listen</button></article>`).join('');
     $$('#germanyLifeList [data-germany-say]').forEach(b=>b.onclick=()=>speak(D.germanyLifeTopics[+b.dataset.germanySay].de,.88));
   }
   function renderMistakes(){
-    const weak=D.vocabulary.filter(w=>['again','hard'].includes(wordState(w.id).lastRating));
-    $('#mistakeList').innerHTML=weak.length?weak.map(w=>`<article class="card phrase-card"><div class="phrase-top"><div><span class="section-tag">${esc(wordState(w.id).lastRating.toUpperCase())}</span><h3>${deHtml([w.article,w.de].filter(Boolean).join(' '))}</h3><p>${esc(w.bn)} • ${esc(w.en)}</p></div><button class="icon-btn" data-mistake-say="${w.id}">🔊</button></div><div class="button-row"><button class="ghost-btn" data-mistake-good="${w.id}">I know it now</button></div></article>`).join(''):'<div class="card empty-state">এখনো tracked mistake নেই। Smart Revision-এ Again/Hard দিলে এখানে আসবে।</div>';
-    $$('#mistakeList [data-mistake-say]').forEach(b=>{const w=D.vocabulary.find(x=>x.id===b.dataset.mistakeSay);b.onclick=()=>speak(w.de)}); $$('#mistakeList [data-mistake-good]').forEach(b=>b.onclick=()=>{scheduleWord(b.dataset.mistakeGood,'good');renderMistakes();});
+    const weak=D.vocabulary.filter(w=>['again','hard'].includes(wordState(w.id).lastRating)).map(w=>({id:w.id,de:w.de,bn:w.bn,en:w.en,label:wordState(w.id).lastRating.toUpperCase()}));
+    const gameWeak=Object.entries(state.gameMistakes||{}).map(([id,x])=>({id,...x,label:'GAME ×'+(x.count||1)}));
+    const all=[...weak,...gameWeak].sort((a,b)=>(b.count||0)-(a.count||0));
+    $('#mistakeList').innerHTML=all.length?all.map(w=>'<article class="card phrase-card"><div class="phrase-top"><div><span class="section-tag">'+esc(w.label)+'</span><h3>'+deHtml(w.de)+'</h3><p>'+esc(w.bn||'')+' • '+esc(w.en||'')+'</p></div><button class="icon-btn" data-mistake-say="'+esc(w.id)+'">🔊</button></div><div class="button-row"><button class="ghost-btn" data-mistake-good="'+esc(w.id)+'">I know it now</button></div></article>').join(''):'<div class="card empty-state">এখনো tracked mistake নেই। Game বা Smart Revision-এ ভুল করলে এখানে আসবে।</div>';
+    $$('#mistakeList [data-mistake-say]').forEach(b=>b.onclick=()=>{const core=D.vocabulary.find(x=>x.id===b.dataset.mistakeSay),extra=state.gameMistakes?.[b.dataset.mistakeSay];speak(core?.de||extra?.de||'');});
+    $$('#mistakeList [data-mistake-good]').forEach(b=>b.onclick=()=>{const id=b.dataset.mistakeGood;if(D.vocabulary.some(x=>x.id===id))scheduleWord(id,'good');if(state.gameMistakes?.[id]){delete state.gameMistakes[id];saveState();}renderMistakes();});
   }
 
   function renderMemory(){
@@ -613,8 +684,8 @@
 
   function bind(){
     $$('.nav-item').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
-    $('[data-jump]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.jump)));
-    $('[data-open-lesson]').forEach(b=>b.addEventListener('click',()=>{state.selectedLevel='FOUNDATION';saveState();closeSidebar();openLesson(b.dataset.openLesson);}));
+    $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.jump)));
+    $$('[data-open-lesson]').forEach(b=>b.addEventListener('click',()=>{state.selectedLevel='FOUNDATION';saveState();closeSidebar();openLesson(b.dataset.openLesson);}));
     $('#menuBtn').onclick=openSidebar; $('#closeMenuBtn').onclick=closeSidebar; $('#sidebarBackdrop').onclick=closeSidebar;
     $$('[data-close-modal]').forEach(b=>b.onclick=()=>closeModal(b.dataset.closeModal));
     $$('.modal-backdrop').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);}));
@@ -630,9 +701,10 @@
     $('#gameListenNew').onclick=newListenGame;
     $('#gameSpellPlay').onclick=()=>currentSpellWord&&speak(currentSpellWord.de,.72);
     $('#gameSpellCheck').onclick=checkSpellGame;$('#gameSpellNew').onclick=newSpellGame;
-    $('#gameArticleNew').onclick=newArticleGame;$('[data-article]').forEach(b=>b.onclick=()=>answerArticleGame(b.dataset.article,b));
+    $('#gameArticleNew').onclick=newArticleGame;$$('[data-article]').forEach(b=>b.onclick=()=>answerArticleGame(b.dataset.article,b));
     $('#gameSentenceCheck').onclick=checkSentenceGame;$('#gameSentenceNew').onclick=newSentenceGame;
     $('#gameSpeedStart').onclick=()=>newSpeedGame(true);$('#gameSpeedCheck').onclick=checkSpeedGame;
+    $('#gameCaseNew').onclick=newCaseGame;$('#gameMemoryNew').onclick=newMemoryGame;
     $('#recallNewBtn').onclick=newRecall; $('#recallRevealBtn').onclick=()=>{$('#recallAnswer').hidden=false;if(currentRecall)speak(currentRecall.de);};
     $('#translateBtn').onclick=translate; $('#correctorBtn').onclick=correctGerman; $('#swapTranslateBtn').onclick=()=>{const m=$('#translationMode');const map={'bn-de':'de-bn','de-bn':'bn-de','en-de':'de-en','de-en':'en-de'};m.value=map[m.value];};
     $('#exportBtn').onclick=exportProgress; $('#importInput').onchange=e=>{if(e.target.files[0])importProgress(e.target.files[0]);e.target.value='';}; $('#resetBtn').onclick=resetProgress;
