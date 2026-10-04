@@ -745,7 +745,7 @@
   function renderAll(){ renderMetrics(); renderCourse(); renderVocabulary(); renderPhrases(); renderGrammar(); renderPronunciation(); renderMemory(); renderGames(); renderProfessional(); renderGermanyLife(); renderExamCards(); renderReview(); renderMistakes(); renderProgress(); }
 
   function bind(){
-    $$('.nav-item').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+    $('.nav-item[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
     $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.jump)));
     $$('[data-open-lesson]').forEach(b=>b.addEventListener('click',()=>{state.selectedLevel='FOUNDATION';saveState();closeSidebar();openLesson(b.dataset.openLesson);}));
     $('#menuBtn').onclick=openSidebar; $('#closeMenuBtn').onclick=closeSidebar; $('#sidebarBackdrop').onclick=closeSidebar;
