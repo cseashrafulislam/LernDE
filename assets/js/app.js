@@ -10,6 +10,13 @@
   const clamp = (n,a,b) => Math.min(b,Math.max(a,n));
   const shuffle = arr => [...arr].sort(() => Math.random() - .5);
   const deHtml = text => `<span data-german-text>${esc(text)}</span>`;
+  function learningExampleForWord(word){
+    if(word?.example)return {de:word.example,bn:word.exampleBn||'',kind:'Usage example'};
+    const key=String(word?.de||'').trim().toLocaleLowerCase('de-DE');
+    const curated=(D?.vocabulary||[]).find(v=>String(v.de||'').trim().toLocaleLowerCase('de-DE')===key);
+    if(curated?.example)return {de:curated.example,bn:curated.exampleBn||'',kind:'Usage example'};
+    return {de:'Heute lerne ich das Wort „'+String(word?.de||'')+'“.',bn:'আজ আমি “'+String(word?.bn||word?.de||'')+'” শব্দটি শিখছি।',kind:'Learning example'};
+  }
 
   const defaultState = () => ({
     version: 4,
@@ -184,7 +191,7 @@
         : '';
       const wordsHtml=lessonWords.length
         ? '<div class="lesson-content-block"><div class="lesson-block-head"><div><h3>📚 50 Source-backed reference words</h3><p class="muted">এগুলো broad reference vocabulary। Core lesson mastery-এর বিকল্প নয়; প্রতিটি entry source-backed এবং duplicate-free রাখা হয়েছে।</p></div><span class="section-tag">'+lessonWords.length+' NEW</span></div><div class="lesson-word-grid">'
-          +lessonWords.map((w,i)=>'<article class="lesson-word"><span class="word-no">'+(i+1)+'</span><div><b data-german-text>'+esc(w.de)+'</b><p>'+esc(w.bn)+'</p><small>'+esc(String(w.en||'').length>110?String(w.en).slice(0,107)+'…':w.en||'')+'</small></div><button class="icon-btn speak-btn" data-say="'+esc(w.de)+'">🔊</button></article>').join('')
+          +lessonWords.map((w,i)=>{const ex=learningExampleForWord(w);return '<article class="lesson-word"><span class="word-no">'+(i+1)+'</span><div><b data-german-text>'+esc(w.de)+'</b><p>'+esc(w.bn)+'</p><small>'+esc(String(w.en||'').length>110?String(w.en).slice(0,107)+'…':w.en||'')+'</small><div class="lesson-word-example"><span>'+esc(ex.kind)+'</span><p data-german-text>'+esc(ex.de)+'</p>'+(ex.bn?'<small>'+esc(ex.bn)+'</small>':'')+'</div></div><button class="icon-btn speak-btn" data-say="'+esc(w.de)+'">🔊</button></article>';}).join('')
           +'</div></div>'
         : '<div class="mistake-box">New-word pack unavailable.</div>';
       $('#lessonModalBody').innerHTML=
@@ -203,7 +210,7 @@
       const sameV=take(levelV,8,(l.order-1)*8), sameP=take(levelP,4,(l.order-1)*4), sameG=take(levelG,2,(l.order-1)*2);
       const expansionHtml=lessonWords.length
         ? '<div class="lesson-content-block"><div class="lesson-block-head"><div><h3>📚 50 Source-backed reference words</h3><p class="muted">এই optional block vocabulary breadth বাড়ায়। Core lesson, grammar ও practical phrase-ই primary learning target; reference list CEFR-certified word list নয়।</p></div><span class="section-tag">'+lessonWords.length+' NEW</span></div><div class="lesson-word-grid">'
-          +lessonWords.map((w,i)=>'<article class="lesson-word"><span class="word-no">'+(i+1)+'</span><div><b data-german-text>'+esc(w.de)+'</b><p>'+esc(w.bn)+'</p><small>'+esc(String(w.en||'').length>100?String(w.en).slice(0,97)+'…':w.en||'')+'</small></div><button class="icon-btn speak-btn" data-say="'+esc(w.de)+'">🔊</button></article>').join('')
+          +lessonWords.map((w,i)=>{const ex=learningExampleForWord(w);return '<article class="lesson-word"><span class="word-no">'+(i+1)+'</span><div><b data-german-text>'+esc(w.de)+'</b><p>'+esc(w.bn)+'</p><small>'+esc(String(w.en||'').length>100?String(w.en).slice(0,97)+'…':w.en||'')+'</small><div class="lesson-word-example"><span>'+esc(ex.kind)+'</span><p data-german-text>'+esc(ex.de)+'</p>'+(ex.bn?'<small>'+esc(ex.bn)+'</small>':'')+'</div></div><button class="icon-btn speak-btn" data-say="'+esc(w.de)+'">🔊</button></article>';}).join('')
           +'</div></div>'
         : '<div class="mistake-box">Lesson vocabulary pack unavailable.</div>';
       $('#lessonModalBody').innerHTML=
@@ -211,7 +218,7 @@
         +'<div class="lesson-content-block"><h3>🎯 Goal</h3><p>'+esc(D.levels.find(x=>x.id===l.level)?.goal||'Practice German step by step.')+'</p></div>'
         +'<div class="lesson-content-block"><h3>📚 Core lesson vocabulary</h3><div class="vocab-grid">'+sameV.map(w=>miniVocab(w)).join('')+'</div></div>'
         +expansionHtml
-        +'<div class="lesson-content-block"><h3>🧩 Grammar</h3>'+sameG.map(g=>'<div class="memory-box"><b>'+esc(g.title)+'</b><p>'+esc(g.rule)+'</p><small>'+esc(g.memory)+'</small></div>').join('')+'</div>'
+        +'<div class="lesson-content-block"><h3>🧩 Grammar</h3>'+sameG.map(g=>'<div class="memory-box"><b>'+esc(g.title)+'</b><p>'+esc(g.rule)+'</p><div class="lesson-inline-example"><small>Example</small><p data-german-text>'+esc(g.good||'')+'</p></div><small>'+esc(g.memory)+'</small></div>').join('')+'</div>'
         +'<div class="lesson-content-block"><h3>💬 Useful patterns</h3>'+sameP.map(p=>'<div class="lesson-content-block"><b data-german-text>'+esc(p.de)+'</b><p>'+esc(p.bn)+'</p><button class="ghost-btn speak-btn" data-say="'+esc(p.de)+'">🔊</button></div>').join('')+'</div>'
         +'<div class="memory-box"><b>Vocabulary standard</b><p>Core lesson content এবং broad reference vocabulary আলাদা। Reference entries source-backed; level mastery lesson outcomes, grammar, phrases, listening, speaking, writing এবং review দিয়ে বিচার করুন।</p></div>'
         +'<button class="primary-btn block" id="completeLessonBtn">'+(state.completedLessons.includes(id)?'✓ Completed — tap to mark incomplete':'Complete lesson ✓')+'</button>';
@@ -226,9 +233,9 @@
     };
   }
   function miniVocab(w){
-    return `<article class="vocab-card"><div class="vocab-visual">${w.emoji}</div><div class="vocab-head"><h3>${deHtml([w.article,w.de].filter(Boolean).join(' '))}</h3><button class="icon-btn speak-btn" data-say="${esc(w.de)}">🔊</button></div><p>${esc(w.bn)}</p><small>${esc(w.en)}</small></article>`;
+    const ex=learningExampleForWord(w);
+    return `<article class="vocab-card"><div class="vocab-visual">${w.emoji}</div><div class="vocab-head"><h3>${deHtml([w.article,w.de].filter(Boolean).join(' '))}</h3><button class="icon-btn speak-btn" data-say="${esc(w.de)}">🔊</button></div><p>${esc(w.bn)}</p><small>${esc(w.en)}</small><div class="vocab-card-example"><span>${esc(ex.kind)}</span><p data-german-text>${esc(ex.de)}</p>${ex.bn?`<small>${esc(ex.bn)}</small>`:''}</div></article>`;
   }
-
   function wordState(id){ return state.vocab[id] || {known:false,lastRating:null,interval:0,due:null,reps:0}; }
   function setWordState(id,next){ state.vocab[id]={...wordState(id),...next}; saveState(); }
   function isDue(id){ const s=wordState(id); return !!s.due && new Date(s.due)<=new Date(); }
@@ -349,7 +356,7 @@
     words=words.filter(w=>status==='ALL'||(status==='KNOWN'&&wordState(w.id).known)||(status==='NEW'&&!state.vocab[w.id])||(status==='REVIEW'&&isDue(w.id)));
     $('#vocabCount').textContent=`${words.length}`;
     $('#vocabGrid').innerHTML=words.length?words.map(w=>{
-      const s=wordState(w.id); return `<article class="vocab-card"><div class="vocab-visual">${w.emoji}</div><div class="vocab-head"><div><span class="vocab-level">${w.level}</span><h3>${deHtml([w.article,w.de].filter(Boolean).join(' '))}</h3></div><button class="icon-btn" data-say="${esc(w.de)}">🔊</button></div><p class="pron-line">${esc(w.bnPron)}</p><p>${esc(w.bn)}</p><small>${esc(w.en)}${w.plural?` • Plural: ${esc(w.plural)}`:''}</small><div class="vocab-actions"><button class="ghost-btn" data-open-word="${w.id}">Details</button><button class="${s.known?'primary-btn':'ghost-btn'}" data-toggle-known="${w.id}">${s.known?'✓ Known':'Mark known'}</button></div></article>`;
+      const s=wordState(w.id),ex=learningExampleForWord(w); return `<article class="vocab-card"><div class="vocab-visual">${w.emoji}</div><div class="vocab-head"><div><span class="vocab-level">${w.level}</span><h3>${deHtml([w.article,w.de].filter(Boolean).join(' '))}</h3></div><button class="icon-btn" data-say="${esc(w.de)}">🔊</button></div><p class="pron-line">${esc(w.bnPron)}</p><p>${esc(w.bn)}</p><small>${esc(w.en)}${w.plural?` • Plural: ${esc(w.plural)}`:''}</small><div class="vocab-card-example"><span>${esc(ex.kind)}</span><p data-german-text>${esc(ex.de)}</p>${ex.bn?`<small>${esc(ex.bn)}</small>`:''}</div><div class="vocab-actions"><button class="ghost-btn" data-open-word="${w.id}">Details</button><button class="${s.known?'primary-btn':'ghost-btn'}" data-toggle-known="${w.id}">${s.known?'✓ Known':'Mark known'}</button></div></article>`;
     }).join(''):'<div class="empty-state">কোনো word পাওয়া যায়নি। Filter পরিবর্তন করুন।</div>';
     $$('#vocabGrid [data-say]').forEach(b=>b.onclick=()=>speak(b.dataset.say));
     $$('#vocabGrid [data-open-word]').forEach(b=>b.onclick=()=>openWord(b.dataset.openWord));
