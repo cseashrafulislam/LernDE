@@ -88,3 +88,22 @@ The 17K dictionary and lesson expansion bank are broad lexical resources, not an
 3. **17K reference dictionary** — broad search/reference coverage; it is not represented as an official CEFR list.
 
 Words intentionally reappear in examples, revision and games because repetition is required for learning; only the **New Word count** is deduplicated.
+
+
+## Final production baseline
+
+Accepted production baseline: **2026-10-04**.
+
+Verified repository gates:
+- 5 levels / 68 lessons
+- Foundation alphabet A–Z + Ä Ö Ü ß and 18 lesson-specific Foundation content records
+- 3,400 lesson New Words: exactly 50 per lesson, 3,400 unique German lemmas, zero duplicate New-Word introductions
+- 17,000 unique searchable reference dictionary entries
+- 8 implemented learning-game modes with score/streak/mistake tracking
+- 51 grammar topics, 37 phrase patterns, 18 pronunciation drills, 5 mock-exam sets
+- A1/A2/B1/B2 lesson packs wired into the lesson renderer
+- PWA service worker precaches all five lesson-vocabulary packs
+- direct German Alphabet entry from navigation/home
+- static JavaScript/DOM/data/cache validation gates in `tools/validate.mjs`
+
+The reference dictionary is intentionally separated from curated teaching content; broad reference coverage is not presented as an official CEFR vocabulary list.
