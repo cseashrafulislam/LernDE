@@ -100,7 +100,7 @@
         <div class="section-heading compact"><div><span class="section-tag">ONE SITE • FULL LEARNING FLOW</span><h2>Everything works together</h2></div></div>
         <div class="module-grid">
           <button class="module-card" data-open-lesson="FOUNDATION-01"><span>🔤</span><h3>German Alphabet</h3><p>A–Z + Ä Ö Ü ß • letter names • audio • spelling</p></button>
-          <button class="module-card" data-jump="course"><span>🚀</span><h3>Foundation → B2</h3><p>68 structured learning units</p></button>
+          <button class="module-card" data-jump="course"><span>🚀</span><h3>Foundation → B2</h3><p>68 lessons • 3,400 unique new-word slots</p></button>
           <button class="module-card" data-jump="vocabulary"><span>🖼️</span><h3>Visual Vocabulary</h3><p>image/icon memory + German audio</p></button>
           <button class="module-card" data-jump="dictionary"><span>📖</span><h3>17K Dictionary</h3><p>17,000 source-backed German ↔ বাংলা/English terms</p></button>
           <button class="module-card" data-jump="grammar"><span>🧩</span><h3>Grammar Lab</h3><p>actual rule + Bangla memory trick</p></button>
@@ -184,7 +184,7 @@
 
 
       <section class="view" id="view-games">
-        <div class="section-heading"><div><span class="section-tag">ACTIVE RECALL • LISTENING • GRAMMAR</span><h2>German Game Lab</h2><p>প্রতিটি game শেখার কাজে লাগবে। Wrong answer weak-item tracking-এ যাবে; score শুধু feedback, লক্ষ্য mastery।</p></div></div>
+        <div class="section-heading"><div><span class="section-tag">ACTIVE RECALL • LISTENING • GRAMMAR</span><h2>German Game Lab — 8 Modes</h2><p>প্রতিটি game শেখার কাজে লাগবে। Wrong answer weak-item tracking-এ যাবে; score শুধু feedback, লক্ষ্য mastery।</p></div></div>
         <div class="game-control card">
           <div><label><b>Level</b></label><select id="gameLevel"><option value="FOUNDATION">Foundation — 900 words</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option></select></div>
           <div class="game-score"><span>Score <b id="gameScore">0</b></span><span>Streak <b id="gameStreak">0</b></span><span>Best <b id="gameBest">0</b></span><button id="gameResetScore" class="ghost-btn">Reset round</button></div>
@@ -196,6 +196,8 @@
           <article class="card game-card"><span>🎯</span><h3>Article Battle</h3><p>Known noun-এর der / die / das নির্বাচন করুন।</p><p id="gameArticlePrompt">Pick der / die / das.</p><div class="game-options"><button data-article="der">der</button><button data-article="die">die</button><button data-article="das">das</button></div><div id="gameArticleResult" class="muted"></div><button id="gameArticleNew" class="primary-btn">New noun</button></article>
           <article class="card game-card"><span>🧩</span><h3>Sentence Builder</h3><p>German phrase-এর words সঠিক order-এ সাজান।</p><div id="gameSentenceTarget" class="sentence-target"></div><div id="gameSentenceTokens" class="token-bank"></div><div id="gameSentenceBuilt" class="sentence-built"></div><div class="button-row wrap"><button id="gameSentenceCheck" class="primary-btn">Check</button><button id="gameSentenceNew" class="ghost-btn">New sentence</button></div><div id="gameSentenceResult" class="muted"></div></article>
           <article class="card game-card"><span>⚡</span><h3>Speed Recall</h3><p>বাংলা meaning দেখে 20 seconds-এর মধ্যে German মনে করুন।</p><h4 id="gameSpeedPrompt">Press Start</h4><input id="gameSpeedInput" type="text" autocomplete="off" placeholder="German…" /><div class="game-timer" id="gameSpeedTimer">20</div><div class="button-row wrap"><button id="gameSpeedStart" class="primary-btn">Start</button><button id="gameSpeedCheck" class="ghost-btn">Check</button></div><div id="gameSpeedResult" class="muted"></div></article>
+          <article class="card game-card"><span>⚖️</span><h3>Case Challenge</h3><p>Nominativ / Akkusativ / Dativ / Genitiv pattern practice।</p><p id="gameCasePrompt">Start a case round.</p><div id="gameCaseOptions" class="game-options"></div><div id="gameCaseResult" class="muted"></div><button id="gameCaseNew" class="primary-btn">New case</button></article>
+          <article class="card game-card"><span>🃏</span><h3>Memory Match</h3><p>German ↔ বাংলা pair active recall দিয়ে মিলান।</p><div id="gameMemoryBoard" class="memory-board"></div><div id="gameMemoryResult" class="muted"></div><button id="gameMemoryNew" class="primary-btn">New board</button></article>
         </div>
       </section>
 
