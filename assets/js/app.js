@@ -745,7 +745,7 @@
   function renderAll(){ renderMetrics(); renderCourse(); renderVocabulary(); renderPhrases(); renderGrammar(); renderPronunciation(); renderMemory(); renderGames(); renderProfessional(); renderGermanyLife(); renderExamCards(); renderReview(); renderMistakes(); renderProgress(); }
 
   function bind(){
-    $('.nav-item[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
+    $$('.nav-item[data-view]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.view)));
     $$('[data-jump]').forEach(b=>b.addEventListener('click',()=>showView(b.dataset.jump)));
     $$('[data-open-lesson]').forEach(b=>b.addEventListener('click',()=>{state.selectedLevel='FOUNDATION';saveState();closeSidebar();openLesson(b.dataset.openLesson);}));
     $('#menuBtn').onclick=openSidebar; $('#closeMenuBtn').onclick=closeSidebar; $('#sidebarBackdrop').onclick=closeSidebar;
@@ -755,7 +755,7 @@
     $('#vocabSearch').oninput=renderVocabulary;
     $('#dictSearch').oninput=()=>{dictionaryPage=1;renderDictionary();};
     ['#dictLanguage','#dictEntryClass','#dictCategory','#dictSort','#dictPageSize'].forEach(sel=>{$(sel).onchange=()=>{dictionaryPage=1;saveDictionaryControls();renderDictionary();};});
-    $('.dictionary-status-tabs [data-dict-status]').forEach(btn=>btn.onclick=()=>{state.dictionaryPrefs={...(state.dictionaryPrefs||{}),status:btn.dataset.dictStatus};dictionaryPage=1;saveState();renderDictionary();});
+    $$('.dictionary-status-tabs [data-dict-status]').forEach(btn=>btn.onclick=()=>{state.dictionaryPrefs={...(state.dictionaryPrefs||{}),status:btn.dataset.dictStatus};dictionaryPage=1;saveState();renderDictionary();});
     $('#dictClearBtn').onclick=()=>{$('#dictSearch').value='';state.dictionaryPrefs={...defaultState().dictionaryPrefs,status:state.dictionaryPrefs?.status||'UNREAD'};dictionaryPage=1;saveState();renderDictionary();};
     $('#vocabLevel').onchange=renderVocabulary; $('#vocabStatus').onchange=renderVocabulary; $('#randomVocabBtn').onclick=()=>{$('#vocabSearch').value='';$('#vocabLevel').value='ALL';renderVocabulary();const cards=$$('#vocabGrid .vocab-card');if(cards.length)cards[Math.floor(Math.random()*cards.length)].scrollIntoView({behavior:'smooth',block:'center'});};
     $('#phraseLevel').onchange=renderPhrases; $('#phraseSearch').oninput=renderPhrases; $('#grammarLevel').onchange=renderGrammar; $('#grammarSearch').oninput=renderGrammar;
