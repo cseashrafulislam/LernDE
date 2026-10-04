@@ -80,3 +80,9 @@
   .game-control select{width:100%;min-width:0}
   .game-score{justify-content:space-between}
 }
+
+.memory-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.memory-card{min-height:58px;border:1px solid var(--border,#d8dee9);border-radius:10px;background:var(--card,#fff);font-weight:700;padding:8px;cursor:pointer}
+.memory-card.open{outline:2px solid rgba(59,130,246,.25)}
+.memory-card.game-correct{cursor:default}
+@media(max-width:640px){.memory-board{grid-template-columns:repeat(2,minmax(0,1fr))}}
