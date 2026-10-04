@@ -29,7 +29,7 @@
   window.LernDEReady=(async()=>{
     try{
       const cfg=await json('config/modules.json',false); window.LERNDE_MODULES=cfg||null;
-      if(cfg?.modules){for(const m of [...cfg.modules].sort((a,b)=>(a.order?99)-(b.order??99))){if(!m.enabled||m.bundled!==false)continue;if(m.pack)await loadPackModule(m);else await loadSplitModule(m);}}
+      if(cfg?.modules){for(const m of [...cfg.modules].sort((a,b)=>(a.order??99)-(b.order??99))){if(!m.enabled||m.bundled!==false)continue;if(m.pack)await loadPackModule(m);else await loadSplitModule(m);}}
       rebuildTranslator(); window.dispatchEvent(new CustomEvent('lernde:content-ready',{detail:{ok:true}})); return {ok:true};
     }catch(error){console.error('[LernDE module loader]',error);window.dispatchEvent(new CustomEvent('lernde:content-ready',{detail:{ok:false,error:String(error)}}));return {ok:false,error};}
   })();
