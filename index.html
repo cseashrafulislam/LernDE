@@ -135,12 +135,20 @@
       <section class="view" id="view-dictionary">
         <div class="section-heading"><div><span class="section-tag">17,000 SOURCE-BACKED TERMS</span><h2>German Dictionary</h2><p>German শব্দ search করুন। বাংলা ও English support meaning দেখুন, German pronunciation শুনুন। এই bank reference/search-এর জন্য; lesson-এর “New Words” আলাদা pedagogically validated list।</p></div><div class="section-stat"><strong id="dictTotal">17,000</strong><span>unique entries</span></div></div>
         <div class="toolbar card dictionary-toolbar">
-          <input id="dictSearch" type="search" autocomplete="off" placeholder="German / বাংলা / English — অন্তত 2 অক্ষর লিখুন…" />
+          <input id="dictSearch" type="search" autocomplete="off" placeholder="German / বাংলা / English search…" />
           <select id="dictLanguage"><option value="ALL">All fields</option><option value="DE">German</option><option value="BN">বাংলা</option><option value="EN">English</option></select>
+          <select id="dictReadFilter"><option value="UNREAD">Unread</option><option value="READ">Read</option><option value="ALL">All</option></select>
+          <select id="dictPageSize"><option value="20">20 / page</option><option value="15">15 / page</option></select>
           <button id="dictClearBtn" class="ghost-btn">Clear</button>
         </div>
-        <div id="dictStatus" class="card dictionary-status">Dictionary প্রথমবার খুললে 4টি data chunk lazy-load হবে। Search করতে অন্তত 2 অক্ষর লিখুন।</div>
+        <div class="card dictionary-status"><b>Study progress:</b> <span id="dictReadCount">0</span> read • <span id="dictUnreadCount">17,000</span> unread</div>
+        <div id="dictStatus" class="card dictionary-status">Dictionary first load-এ 4টি data chunk lazy-load হবে। Default list = Unread.</div>
         <div id="dictResults" class="dictionary-results"></div>
+        <div class="card dictionary-pager">
+          <button id="dictPrevBtn" class="ghost-btn">← Previous</button>
+          <span id="dictPageInfo">Page 1 / 1</span>
+          <button id="dictNextBtn" class="ghost-btn">Next →</button>
+        </div>
       </section>
 
       <section class="view" id="view-phrases">
