@@ -32,7 +32,7 @@ if((D.shadowingSets||[]).length<5)throw new Error('Shadowing sets missing');
 if((D.germanyLifeTopics||[]).length<6)throw new Error('Germany life content missing');
 const html=read('index.html');
 const domIds=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);const seen=new Set();for(const id of domIds){if(seen.has(id))throw new Error(`Duplicate DOM id ${id}`);seen.add(id)}
-for(const id of ['view-home','view-course','view-vocabulary','view-grammar','view-pronunciation','view-memory','view-games','view-skills','view-translator','view-professional','view-germany','view-exam','view-review','view-mistakes','view-progress','lessonModal','vocabModal','examModal'])if(!seen.has(id))throw new Error(`Missing DOM id ${id}`);
+for(const id of ['view-home','view-course','view-vocabulary','view-dictionary','view-grammar','view-pronunciation','view-memory','view-games','view-skills','view-translator','view-professional','view-germany','view-exam','view-review','view-mistakes','view-progress','lessonModal','vocabModal','examModal'])if(!seen.has(id))throw new Error(`Missing DOM id ${id}`);
 for(const script of ['assets/js/data-core.js','assets/js/data-lessons.js','assets/js/data-vocabulary.js','assets/js/data-grammar.js','assets/js/data-phrases.js','assets/js/data-pronunciation.js','assets/js/data-foundation.js','assets/js/data-professional.js','assets/js/data-exams.js','assets/js/module-loader.js','assets/js/app.js','assets/js/german-text.js'])if(!html.includes(`src="${script}"`))throw new Error(`Script not loaded: ${script}`);
 const app=read('assets/js/app.js');
 const dynamicIds=new Set([...app.matchAll(/id=\\?"([A-Za-z][\w-]*)\\?"/g)].map(m=>m[1]));
@@ -47,20 +47,36 @@ for(const l of D.lessons.filter(x=>x.level==='FOUNDATION')){
   const d=D.foundationContent[l.id];
   if(!d||!d.goal||!d.why||!Array.isArray(d.rules)||d.rules.length<3||!Array.isArray(d.examples)||d.examples.length<3||!Array.isArray(d.dialogue)||d.dialogue.length<2||!Array.isArray(d.tasks)||d.tasks.length<2)throw new Error('Incomplete Foundation lesson '+l.id);
 }
-if(!exists('assets/data/lesson-vocabulary-foundation.json'))throw new Error('Missing Foundation lesson vocabulary pack');
-const foundationPack=JSON.parse(read('assets/data/lesson-vocabulary-foundation.json'));
-const fWords=[];for(const l of D.lessons.filter(x=>x.level==='FOUNDATION')){
-  const list=foundationPack.lessons?.[l.id];
-  if(!Array.isArray(list)||list.length!==50)throw new Error(l.id+' must contain exactly 50 new words');
-  fWords.push(...list);
+
+const lessonPackSpec={FOUNDATION:18,A1:12,A2:12,B1:12,B2:14};
+const lessonPackFiles={
+  FOUNDATION:'assets/data/lesson-vocabulary-foundation.json',
+  A1:'assets/data/lesson-vocabulary-a1.json',
+  A2:'assets/data/lesson-vocabulary-a2.json',
+  B1:'assets/data/lesson-vocabulary-b1.json',
+  B2:'assets/data/lesson-vocabulary-b2.json'
+};
+const newLemmaSeen=new Set();let lessonWordTotal=0;
+for(const [level,count] of Object.entries(lessonPackSpec)){
+  const p=lessonPackFiles[level];
+  if(!exists(p))throw new Error('Missing lesson vocabulary pack '+p);
+  const pack=JSON.parse(read(p));
+  if(pack.level!==level)throw new Error('Wrong pack level in '+p);
+  if(pack.total!==count*50)throw new Error(level+' pack total must be '+(count*50));
+  for(let i=1;i<=count;i++){
+    const id=level+'-'+String(i).padStart(2,'0');
+    const words=pack.lessons?.[id];
+    if(!Array.isArray(words)||words.length!==50)throw new Error(id+' must contain exactly 50 new words');
+    for(const w of words){
+      const k=String(w.de||'').trim().toLocaleLowerCase('de-DE');
+      if(!k||!w.bn||!w.en)throw new Error('Bad lesson word '+id+' '+(w.id||'?'));
+      if(newLemmaSeen.has(k))throw new Error('Duplicate New Word lemma across 68 lessons: '+w.de);
+      newLemmaSeen.add(k);lessonWordTotal++;
+    }
+  }
 }
-if(fWords.length!==900)throw new Error('Foundation new-word total must be 900');
-const fLemma=new Set();for(const w of fWords){
-  const k=String(w.de||'').trim().toLocaleLowerCase('de-DE');
-  if(!k||!w.bn||!w.en)throw new Error('Bad Foundation new word '+(w.id||'?'));
-  if(fLemma.has(k))throw new Error('Foundation duplicate New Word lemma: '+w.de);
-  fLemma.add(k);
-}
+if(lessonWordTotal!==3400||newLemmaSeen.size!==3400)throw new Error('Expected exactly 3400 unique lesson New Words');
+
 if(!exists('assets/data/dictionary-manifest.json'))throw new Error('Missing 17K dictionary manifest');
 const dictManifest=JSON.parse(read('assets/data/dictionary-manifest.json'));
 if(dictManifest.total!==17000||dictManifest.chunks!==4)throw new Error('Dictionary manifest must declare 17,000 entries in 4 chunks');
@@ -76,14 +92,17 @@ for(let i=1;i<=4;i++){
     dictKeys.add(k);
   }
 }
-if(dictTotal!==17000)throw new Error('17K dictionary actual count is '+dictTotal);
-for(const id of ['gameLevel','gameScore','gameStreak','gameBest','gameResetScore','gameMeaningNew','gameListenPlay','gameListenOptions','gameListenNew','gameSpellPlay','gameSpellInput','gameSpellCheck','gameSpellNew','gameArticleNew','gameSentenceTarget','gameSentenceTokens','gameSentenceBuilt','gameSentenceCheck','gameSentenceNew','gameSpeedPrompt','gameSpeedInput','gameSpeedTimer','gameSpeedStart','gameSpeedCheck'])if(!seen.has(id))throw new Error('Missing pro-game DOM id '+id);
-for(const token of ['#gameLevel','#gameResetScore','#gameMeaningNew','#gameListenPlay','#gameSpellCheck','#gameArticleNew','#gameSentenceCheck','#gameSpeedStart','#gameSpeedCheck'])if(!app.includes(token))throw new Error('Game runtime handler missing '+token);
+if(dictTotal!==17000||dictKeys.size!==17000)throw new Error('17K dictionary actual unique count mismatch: '+dictTotal+'/'+dictKeys.size);
+
+const gameIds=['gameLevel','gameScore','gameStreak','gameBest','gameResetScore','gameMeaningNew','gameListenPlay','gameListenOptions','gameListenNew','gameSpellPlay','gameSpellInput','gameSpellCheck','gameSpellNew','gameArticleNew','gameSentenceTarget','gameSentenceTokens','gameSentenceBuilt','gameSentenceCheck','gameSentenceNew','gameSpeedPrompt','gameSpeedInput','gameSpeedTimer','gameSpeedStart','gameSpeedCheck','gameCasePrompt','gameCaseOptions','gameCaseResult','gameCaseNew','gameMemoryBoard','gameMemoryResult','gameMemoryNew'];
+for(const id of gameIds)if(!seen.has(id))throw new Error('Missing pro-game DOM id '+id);
+for(const fn of ['newMeaningGame','newListenGame','newSpellGame','newArticleGame','newSentenceGame','newSpeedGame','newCaseGame','newMemoryGame'])if(!app.includes('function '+fn+'('))throw new Error('Missing game implementation '+fn);
+for(const token of ['#gameLevel','#gameResetScore','#gameMeaningNew','#gameListenPlay','#gameSpellCheck','#gameArticleNew','#gameSentenceCheck','#gameSpeedStart','#gameSpeedCheck','#gameCaseNew','#gameMemoryNew'])if(!app.includes(token))throw new Error('Game runtime handler missing '+token);
+if(/(^|[^$])\$\([^;\n]*\)\.forEach/m.test(app))throw new Error('querySelector(...).forEach runtime bug detected; use $$() for NodeList iteration');
 if(app.includes('completdLessons'))throw new Error('Known completedLessons typo still present');
 if(!app.includes('foundationAlphabet')||!app.includes('foundationContent'))throw new Error('Foundation renderer not wired');
-
 const manifest=JSON.parse(read('manifest.webmanifest'));if(!manifest.name||!manifest.start_url)throw new Error('Bad web manifest');
-const contentManifest=JSON.parse(read('assets/data/content-manifest.json'));if(contentManifest.lessons!==D.lessons.length||contentManifest.vocabularyEntries!==D.vocabulary.length)throw new Error('Content manifest out of sync');
+const contentManifest=JSON.parse(read('assets/data/content-manifest.json'));if(contentManifest.lessons!==D.lessons.length||contentManifest.vocabularyEntries!==D.vocabulary.length||contentManifest.lessonVocabularyEntries!==3400||contentManifest.uniqueNewLessonLemmas!==3400||contentManifest.extendedDictionaryEntries!==17000||contentManifest.gameModes!==8)throw new Error('Content manifest out of sync');
 const modules=JSON.parse(read('config/modules.json'));for(const l of levels)if(!modules.modules.some(x=>x.id===l&&x.enabled))throw new Error(`Enabled module missing: ${l}`);
-const sw=read('sw.js');for(const asset of ['index.html','assets/css/app.css','assets/js/data-core.js','assets/js/data-lessons.js','assets/js/data-vocabulary.js','assets/js/data-grammar.js','assets/js/data-phrases.js','assets/js/data-pronunciation.js','assets/js/data-professional.js','assets/js/data-exams.js','assets/js/module-loader.js','assets/js/app.js','assets/js/german-text.js'])if(!sw.includes(asset))throw new Error(`Service worker does not cache ${asset}`);
-console.log(`PASS: ${D.levels.length} levels, ${D.lessons.length} lessons, 900 unique Foundation new words, 17,000 dictionary entries, ${D.vocabulary.length} curated visual vocab, ${D.grammar.length} grammar, ${D.phrases.length} phrases, ${D.pronunciationDrills.length} pronunciation drills, ${D.mockExams.length} mocks, pro-game runtime wired.`);
+const sw=read('sw.js');for(const asset of ['index.html','assets/css/app.css','assets/js/data-core.js','assets/js/data-lessons.js','assets/js/data-vocabulary.js','assets/js/data-grammar.js','assets/js/data-phrases.js','assets/js/data-pronunciation.js','assets/js/data-foundation.js','assets/js/data-professional.js','assets/js/data-exams.js','assets/js/module-loader.js','assets/js/app.js','assets/js/german-text.js','assets/data/lesson-vocabulary-foundation.json','assets/data/lesson-vocabulary-a1.json','assets/data/lesson-vocabulary-a2.json','assets/data/lesson-vocabulary-b1.json','assets/data/lesson-vocabulary-b2.json'])if(!sw.includes(asset))throw new Error(`Service worker does not cache ${asset}`);
+console.log(`PASS: ${D.levels.length} levels, ${D.lessons.length} lessons, 3400 unique lesson New Words, 17000 unique dictionary entries, 8 game modes, ${D.vocabulary.length} curated mastery cards, ${D.grammar.length} grammar topics, ${D.phrases.length} phrases, ${D.pronunciationDrills.length} pronunciation drills, ${D.mockExams.length} mocks.`);
