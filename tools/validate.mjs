@@ -53,6 +53,8 @@ if(!gt.includes('resolveMeaning')||!gt.includes('addEntries'))throw new Error('G
 if(gt.includes("replace(/(en|ern|er|es|e|n|s)$/"))throw new Error('Unsafe suffix-guessing lookup detected');
 if(loader.includes('translatorPhrasest'))throw new Error('Translator registry typo remains');
 if(!html.includes('cseashrafulislam@gmail.com')||!html.includes('mailto:cseashrafulislam@gmail.com'))throw new Error('Feedback contact missing');
+for(const id of ['todayStartBtn','dashCourseStat','dashVocabStat','dashGameStat','dashSkillsStat','dashReviewStat','dashProgressStat'])if(!seenDom.has(id))throw new Error('Dashboard learning cards missing '+id);
+if(!html.includes('data-jump="games"')||!html.includes('data-jump="skills"')||!html.includes('data-hub-target="hub-progress"'))throw new Error('Dashboard practice navigation incomplete');
 if(html.includes('id="gameSentenceCheck"'))throw new Error('Sentence Builder still requires a manual Check button');
 if(!css.includes('.sentence-practice')||!css.includes('.game-mode-tab')||!css.includes('.profile-editor')||!css.includes('.hub-tabs'))throw new Error('Integrated learner UI styles missing');
 for(const chunk of ['dictionary-01.json','dictionary-02.json','dictionary-03.json','dictionary-04.json'])if(sw.includes("'./assets/data/"+chunk+"'"))throw new Error('Dictionary chunk must not be install-preloaded: '+chunk);

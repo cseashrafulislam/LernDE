@@ -220,6 +220,20 @@
     const pct = Math.round((lessonPct*.6+vocabPct*.4)*100);
     $('#sideProgressText').textContent=`${pct}%`;
     $('#sideProgressBar').style.width=`${pct}%`;
+    const gameTotal=state.game?.total||0,gameCorrect=state.game?.correct||0,gameAccuracy=gameTotal?Math.round(gameCorrect/gameTotal*100):0;
+    const sentenceItems=Object.values(state.sentencePractice||{}),sentenceAttempts=sentenceItems.reduce((n,x)=>n+(x.attempts||0),0);
+    const writingDrafts=(state.writingDrafts||[]).length;
+    if($('#dashCourseStat'))$('#dashCourseStat').textContent=completed+' / '+D.lessons.length+' complete';
+    if($('#dashVocabStat'))$('#dashVocabStat').textContent=known+' / '+D.vocabulary.length+' known';
+    if($('#dashGameStat'))$('#dashGameStat').textContent=gameTotal?(gameAccuracy+'% accuracy • '+gameTotal+' rounds'):'Start your first round';
+    if($('#dashSkillsStat'))$('#dashSkillsStat').textContent=(writingDrafts||sentenceAttempts)?(writingDrafts+' writing drafts • '+sentenceAttempts+' sentence attempts'):'Reading • Listening • Writing • Speaking';
+    if($('#dashReviewStat'))$('#dashReviewStat').textContent=due+' item'+(due===1?'':'s')+' due';
+    if($('#dashProgressStat'))$('#dashProgressStat').textContent=pct+'% overall progress';
+    if($('#todayStartBtn')){
+      const nextLesson=D.lessons.find(x=>!state.completedLessons.includes(x.id))||D.lessons[0];
+      $('#todayStartBtn').textContent=completed?('▶ Continue: '+(nextLesson?.title||'Course')):'▶ Start your first lesson';
+      $('#todayStartBtn').onclick=()=>nextLesson&&openLesson(nextLesson.id);
+    }
   }
 
   async function loadLessonVocabulary(level){
