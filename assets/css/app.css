@@ -138,3 +138,12 @@
 @media(max-width:420px){.alphabet-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hub-metrics{grid-template-columns:1fr 1fr}.game-score{gap:6px}.game-score span{font-size:12px}.profile-fields .button-row{display:grid;grid-template-columns:1fr}.profile-fields .button-row button{width:100%}}
 
 .module-card{position:relative}.module-card p{line-height:1.45;color:#667085}.module-live{display:block;margin-top:10px;padding-top:9px;border-top:1px solid #e9edf3;color:#8a5b06;font-size:11px;font-weight:900;letter-spacing:.015em}.dashboard-practice-card .module-live{color:#334155}@media(max-width:760px){.module-card p{font-size:13px}.module-live{font-size:11px}}
+
+/* dashboard final polish */
+.hero h2{font-size:clamp(28px,3.45vw,44px);line-height:1.1;max-width:790px;letter-spacing:-.018em}
+.module-card{display:flex;flex-direction:column;align-items:flex-start;min-height:148px}
+.module-card p{color:#596579;line-height:1.5}
+.module-card .module-live{width:100%;margin-top:auto}
+.module-card h3{line-height:1.22}
+@media(max-width:1100px){.hero h2{font-size:clamp(27px,3.8vw,40px);max-width:720px}}
+@media(max-width:760px){.hero h2{font-size:clamp(27px,8vw,36px);line-height:1.12;letter-spacing:-.012em}.module-card{min-height:142px}}

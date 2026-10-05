@@ -55,6 +55,7 @@ if(loader.includes('translatorPhrasest'))throw new Error('Translator registry ty
 if(!html.includes('cseashrafulislam@gmail.com')||!html.includes('mailto:cseashrafulislam@gmail.com'))throw new Error('Feedback contact missing');
 for(const id of ['todayStartBtn','dashCourseStat','dashVocabStat','dashGameStat','dashSkillsStat','dashReviewStat','dashProgressStat'])if(!seenDom.has(id))throw new Error('Dashboard learning cards missing '+id);
 if(!html.includes('data-jump="games"')||!html.includes('data-jump="skills"')||!html.includes('data-hub-target="hub-progress"'))throw new Error('Dashboard practice navigation incomplete');
+for(const text of ['30 letters • audio ready','15/20 paging • low-memory','Sound drills • shadowing','Phrase + dictionary lookup','Workplace • meetings • IT','Housing • travel • daily life','A1 → B2 • timed practice'])if(!html.includes(text))throw new Error('Dashboard polish status missing '+text);
 if(html.includes('id="gameSentenceCheck"'))throw new Error('Sentence Builder still requires a manual Check button');
 if(!css.includes('.sentence-practice')||!css.includes('.game-mode-tab')||!css.includes('.profile-editor')||!css.includes('.hub-tabs'))throw new Error('Integrated learner UI styles missing');
 for(const chunk of ['dictionary-01.json','dictionary-02.json','dictionary-03.json','dictionary-04.json'])if(sw.includes("'./assets/data/"+chunk+"'"))throw new Error('Dictionary chunk must not be install-preloaded: '+chunk);
